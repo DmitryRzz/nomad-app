@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NOMAD — AI Travel Planner</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 20px;
+        }
+        .phone-frame {
+            width: 375px; height: 812px;
+            background: #fff;
+            border-radius: 40px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            border: 12px solid #2c2c2c;
+        }
+        .notch {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 150px; height: 30px;
+            background: #2c2c2c;
+            border-radius: 0 0 20px 20px;
+            z-index: 100;
+        }
+        .screen {
+            width: 100%; height: 100%;
+            overflow-y: auto;
+            display: none;
+            padding-bottom: 80px;
+        }
+        .screen { display: none; }
+
+        /* Navigation */
+        .bottom-nav {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 70px;
+            background: #fff;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #eee;
+            z-index: 50;
+            padding-bottom: 10px;
+        }
+        .nav-item {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 4px;
+            cursor: pointer; padding: 8px 12px;
+            border-radius: 12px; transition: all 0.2s;
+        }
+        .nav-item:hover { background: #f0f0f0; }
+        .nav-item.active .nav-icon { color: #2E7D32; }
+        .nav-item.active .nav-label { color: #2E7D32; }
+        .nav-icon { font-size: 24px; color: #666; }
+        .nav-label { font-size: 11px; color: #666; }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            padding: 60px 32px 32px;
+            text-align: center;
+            height: 100%;
+            flex-direction: column;
+        }
+        .logo-box {
+            width: 120px; height: 120px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #2E7D32, #43A047);
+            border-radius: 30px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 60px; color: white;
+            margin-bottom: 32px;
+        }
+        .app-title {
+            font-size: 36px; font-weight: 800;
+            letter-spacing: 4px; color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+        .app-subtitle {
+            font-size: 16px; color: #666;
+            margin-bottom: 40px;
+        }
+        .tagline {
+            font-size: 14px; color: #999;
+            margin-bottom: 40px;
+        }
+        .feature-preview {
+            display: flex; justify-content: center;
+            gap: 24px; margin-bottom: auto;
+        }
+        .feature-item {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 8px;
+        }
+        .feature-icon {
+            width: 56px; height: 56px;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+        }
+        .feature-label { font-size: 12px; color: #666; }
+
+        .btn-primary {
+            width: 100%; padding: 16px;
+            background: #2E7D32; color: white;
+            border: none; border-radius: 12px;
+            font-size: 16px; font-weight: 600;
+            cursor: pointer; margin-bottom: 12px;
+        }
+        .btn-outline {
+            width: 100%; padding: 16px;
+            background: transparent; color: #2E7D32;
+            border: 2px solid #2E7D32;
+            border-radius: 12px;
+            font-size: 16px; font-weight: 600;
+            cursor: pointer;
+        }
+        .terms-text {
+            font-size: 11px; color: #999;
+            margin-top: 16px; padding: 0 16px;
+        }
+
+        /* Login/Register */
+        .auth-screen {
+            padding: 40px 24px;
+            height: 100%;
+        }
+        .auth-title {
+            font-size: 28px; font-weight: 700;
+            margin-bottom: 8px; color: #1a1a2e;
+        }
+        .auth-subtitle {
+            font-size: 14px; color: #666;
+            margin-bottom: 32px;
+        }
+        .input-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        .input-label {
+            font-size: 13px; font-weight: 500;
+            color: #333; margin-bottom: 6px;
+            display: block;
+        }
+        .input-field {
+            width: 100%; padding: 14px 16px;
+            border: 1.5px solid #ddd;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+        .input-field:focus {
+            outline: none; border-color: #2E7D32;
+        }
+        .forgot-link {
+            text-align: right;
+            font-size: 13px; color: #2E7D32;
+            margin-bottom: 24px; cursor: pointer;
+        }
+        .divider {
+            display: flex; align-items: center;
+            gap: 16px; margin: 24px 0;
+            color: #999; font-size: 13px;
+        }
+        .divider::before, .divider::after {
+            content: ''; flex: 1; height: 1px;
+            background: #eee;
+        }
+        .auth-switch {
+            text-align: center; font-size: 14px;
+            color: #666; margin-top: 16px;
+        }
+        .auth-switch a { color: #2E7D32; cursor: pointer; }
+
+        /* Routes Screen */
+        .routes-screen { padding: 16px; }
+        .screen-header {
+            display: flex; justify-content: space-between;
+            align-items: center;
+            padding: 16px 0 20px;
+        }
+        .screen-title {
+            font-size: 28px; font-weight: 700;
+            color: #1a1a2e;
+        }
+        .icon-btn {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            background: #f5f5f5;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 20px;
+            border: none;
+        }
+        .route-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .route-card:hover { transform: translateY(-2px); }
+        .route-city {
+            font-size: 18px; font-weight: 700;
+            color: #1a1a2e; margin-bottom: 4px;
+        }
+        .route-details {
+            font-size: 13px; color: #666;
+            margin-bottom: 12px;
+        }
+        .route-tags {
+            display: flex; gap: 8px; flex-wrap: wrap;
+        }
+        .route-tag {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 12px; font-weight: 500;
+        }
+        .tag-green { background: #E8F5E9; color: #2E7D32; }
+        .tag-blue { background: #E3F2FD; color: #1565C0; }
+        .tag-orange { background: #FFF3E0; color: #E65100; }
+
+        /* Compass Screen */
+        .compass-screen {
+            flex-direction: column;
+            align-items: center; padding: 24px;
+        }
+        .compass-container {
+            width: 280px; height: 280px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #f0f0f0, #e0e0e0);
+            box-shadow: 20px 20px 60px #d0d0d0, -20px -20px 60px #fff;
+            display: flex; align-items: center; justify-content: center;
+            position: relative; margin: 32px 0;
+        }
+        .compass-inner {
+            width: 240px; height: 240px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            position: relative;
+        }
+        .compass-arrow {
+            width: 0; height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 60px solid #E53935;
+            position: absolute; top: 40px;
+            transform-origin: 50% 80px;
+            animation: rotate 8s linear infinite;
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .compass-n { position: absolute; top: 12px; font-weight: 700; color: #E53935; }
+        .compass-s { position: absolute; bottom: 12px; font-weight: 700; }
+        .compass-e { position: absolute; right: 12px; font-weight: 700; }
+        .compass-w { position: absolute; left: 12px; font-weight: 700; }
+        .compass-degree {
+            font-size: 48px; font-weight: 200;
+            color: #1a1a2e; margin-top: 16px;
+        }
+        .poi-list {
+            width: 100%;
+        }
+        .poi-item {
+            display: flex; align-items: center;
+            padding: 12px 16px;
+            background: #fff;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+        .poi-icon { font-size: 24px; margin-right: 12px; }
+        .poi-info { flex: 1; }
+        .poi-name { font-weight: 600; font-size: 14px; }
+        .poi-distance { font-size: 12px; color: #999; }
+        .poi-direction {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: #E8F5E9;
+            display: flex; align-items: center; justify-content: center;
+            color: #2E7D32; font-size: 18px;
+        }
+
+        /* Translate Screen */
+        .translate-screen { padding: 16px; }
+        .translate-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 12px;
+        }
+        .lang-selector {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .lang-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: #f5f5f5;
+            border: none;
+            font-size: 14px; font-weight: 600;
+            cursor: pointer;
+        }
+        .lang-btn.active { background: #2E7D32; color: white; }
+        .swap-btn { font-size: 20px; cursor: pointer; }
+        .translate-input {
+            width: 100%; min-height: 120px;
+            border: none; resize: none;
+            font-size: 16px; font-family: inherit;
+            padding: 8px 0;
+        }
+        .translate-input:focus { outline: none; }
+        .translate-output {
+            min-height: 120px;
+            padding: 16px 0;
+            font-size: 16px;
+            color: #2E7D32;
+            border-top: 1px solid #eee;
+        }
+        .mic-btn {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: #2E7D32;
+            color: white; font-size: 24px;
+            border: none; cursor: pointer;
+            margin: 16px auto;
+            display: block;
+            box-shadow: 0 4px 12px rgba(46,125,50,0.3);
+        }
+
+        /* Profile Screen */
+        .profile-screen { padding: 24px; }
+        .profile-header {
+            text-align: center; margin-bottom: 32px;
+        }
+        .avatar {
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2E7D32, #43A047);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 40px; color: white;
+            font-weight: 700;
+        }
+        .profile-name {
+            font-size: 22px; font-weight: 700;
+            color: #1a1a2e;
+        }
+        .profile-email {
+            font-size: 14px; color: #999;
+            margin-top: 4px;
+        }
+        .stats-row {
+            display: flex; gap: 12px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            flex: 1;
+            padding: 16px;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px; font-weight: 700;
+            color: #2E7D32;
+        }
+        .stat-label {
+            font-size: 12px; color: #666;
+            margin-top: 4px;
+        }
+        .menu-section {
+            margin-bottom: 16px;
+        }
+        .menu-title {
+            font-size: 13px; font-weight: 600;
+            color: #999; margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .menu-list {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .menu-item {
+            display: flex; align-items: center;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .menu-item:hover { background: #f9f9f9; }
+        .menu-item + .menu-item { border-top: 1px solid #f0f0f0; }
+        .menu-icon { font-size: 20px; color: #666; margin-right: 12px; }
+        .menu-text { flex: 1; font-size: 15px; }
+        .menu-arrow { color: #ccc; }
+
+        /* Subscription Screen */
+        .sub-screen { padding: 24px; }
+        .sub-title {
+            font-size: 24px; font-weight: 700;
+            text-align: center; margin-bottom: 8px;
+        }
+        .sub-subtitle {
+            text-align: center; color: #666;
+            font-size: 14px; margin-bottom: 24px;
+        }
+        .plan-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .plan-card:hover { border-color: #2E7D32; }
+        .plan-card.popular { border-color: #2E7D32; position: relative; }
+        .popular-badge {
+            position: absolute; top: -10px; right: 16px;
+            background: #2E7D32; color: white;
+            padding: 4px 12px; border-radius: 12px;
+            font-size: 11px; font-weight: 700;
+        }
+        .plan-name {
+            font-size: 18px; font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .plan-price {
+            font-size: 32px; font-weight: 800;
+            color: #2E7D32; margin-bottom: 12px;
+        }
+        .plan-price span {
+            font-size: 14px; color: #666;
+            font-weight: 400;
+        }
+        .plan-features { list-style: none; }
+        .plan-features li {
+            padding: 6px 0; font-size: 14px;
+            color: #666; display: flex; align-items: center; gap: 8px;
+        }
+        .plan-features li::before {
+            content: "✓"; color: #2E7D32; font-weight: 700;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="notch"></div>
+
+        <!-- Welcome Screen -->
+        <div class="screen welcome-screen active" id="welcome">
+            <div class="logo-box">🧭</div>
+            <div class="app-title">NOMAD</div>
+            <div class="app-subtitle">AI Travel Planner</div>
+            <div class="tagline">Plan smarter. Travel deeper.</div>
+            
+            <div class="feature-preview">
+                <div class="feature-item">
+                    <div class="feature-icon" style="background: #E8F5E9; color: #2E7D32;">🗺️</div>
+                    <div class="feature-label">Routes</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon" style="background: #E3F2FD; color: #1565C0;">🌐</div>
+                    <div class="feature-label">Translate</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon" style="background: #FFF3E0; color: #E65100;">🧭</div>
+                    <div class="feature-label">Compass</div>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="showScreen('register')">Get Started</button>
+            <button class="btn-outline" onclick="showScreen('login')">I already have an account</button>
+            <p class="terms-text">By continuing, you agree to our Terms of Service and Privacy Policy</p>
+        </div>
+
+        <!-- Login Screen -->
+        <div class="screen auth-screen" id="login">
+            <div style="margin-top: 40px;">
+                <div class="auth-title">Welcome back</div>
+                <div class="auth-subtitle">Sign in to continue your journey</div>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">Email</label>
+                <input type="email" class="input-field" placeholder="you@example.com">
+            </div>
+            <div class="input-group">
+                <label class="input-label">Password</label>
+                <input type="password" class="input-field" placeholder="Min. 8 characters">
+            </div>
+            <div class="forgot-link">Forgot password?</div>
+            
+            <button class="btn-primary" onclick="login()">Sign In</button>
+            
+            <div class="divider">or</div>
+            
+            <div class="auth-switch">
+                Don't have an account? <a onclick="showScreen('register')">Sign Up</a>
+            </div>
+        </div>
+
+        <!-- Register Screen -->
+        <div class="screen auth-screen" id="register">
+            <div style="margin-top: 20px;">
+                <div class="auth-title">Get started</div>
+                <div class="auth-subtitle">Create your account to start exploring</div>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">Full Name</label>
+                <input type="text" class="input-field" placeholder="John Doe">
+            </div>
+            <div class="input-group">
+                <label class="input-label">Email</label>
+                <input type="email" class="input-field" placeholder="you@example.com">
+            </div>
+            <div class="input-group">
+                <label class="input-label">Password</label>
+                <input type="password" class="input-field" placeholder="Min. 8 characters">
+            </div>
+            
+            <button class="btn-primary" onclick="login()">Create Account</button>
+            
+            <div class="divider">or</div>
+            
+            <div class="auth-switch">
+                Already have an account? <a onclick="showScreen('login')">Sign In</a>
+            </div>
+        </div>
+
+        <!-- Routes Screen -->
+        <div class="screen routes-screen" id="routes">
+            <div class="screen-header">
+                <div class="screen-title">My Routes</div>
+                <button class="icon-btn" onclick="showScreen('create')">+</button>
+            </div>
+            
+            <div class="route-card" onclick="showRouteDetail()">
+                <div class="route-city">🇯🇵 Tokyo, Japan</div>
+                <div class="route-details">7 days • 12 stops • Balanced pace</div>
+                <div class="route-tags">
+                    <span class="route-tag tag-green">Food</span>
+                    <span class="route-tag tag-blue">Culture</span>
+                    <span class="route-tag tag-orange">Must-see</span>
+                </div>
+            </div>
+            
+            <div class="route-card">
+                <div class="route-city">🇫🇷 Paris, France</div>
+                <div class="route-details">5 days • 8 stops • Relaxed pace</div>
+                <div class="route-tags">
+                    <span class="route-tag tag-green">Art</span>
+                    <span class="route-tag tag-blue">History</span>
+                </div>
+            </div>
+            
+            <div class="route-card">
+                <div class="route-city">🇮🇹 Rome, Italy</div>
+                <div class="route-details">4 days • 10 stops • Intense pace</div>
+                <div class="route-tags">
+                    <span class="route-tag tag-orange">Ancient</span>
+                    <span class="route-tag tag-green">Food</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compass Screen -->
+        <div class="screen compass-screen" id="compass">
+            <div style="font-size: 22px; font-weight: 700; margin-bottom: 8px;">Smart Compass</div>
+            <div style="color: #666; font-size: 14px; margin-bottom: 16px;">Tokyo, Japan</div>
+            
+            <div class="compass-container">
+                <div class="compass-inner">
+                    <div class="compass-n">N</div>
+                    <div class="compass-s">S</div>
+                    <div class="compass-e">E</div>
+                    <div class="compass-w">W</div>
+                    <div class="compass-arrow"></div>
+                    <div style="margin-top: 80px; font-size: 14px; color: #999;">Finding direction...</div>
+                </div>
+            </div>
+            
+            <div class="compass-degree">42° NE</div>
+            
+            <div style="font-size: 16px; font-weight: 600; margin: 24px 0 12px; align-self: flex-start;">Nearby</div>
+            
+            <div class="poi-list">
+                <div class="poi-item">
+                    <div class="poi-icon">⛩️</div>
+                    <div class="poi-info">
+                        <div class="poi-name">Senso-ji Temple</div>
+                        <div class="poi-distance">0.8 km away</div>
+                    </div>
+                    <div class="poi-direction">↗</div>
+                </div>
+                <div class="poi-item">
+                    <div class="poi-icon">🍜</div>
+                    <div class="poi-info">
+                        <div class="poi-name">Ichiran Ramen</div>
+                        <div class="poi-distance">0.3 km away</div>
+                    </div>
+                    <div class="poi-direction">→</div>
+                </div>
+                <div class="poi-item">
+                    <div class="poi-icon">🌸</div>
+                    <div class="poi-info">
+                        <div class="poi-name">Ueno Park</div>
+                        <div class="poi-distance">1.2 km away</div>
+                    </div>
+                    <div class="poi-direction">↑</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Translate Screen -->
+        <div class="screen translate-screen" id="translate">
+            <div class="screen-header">
+                <div class="screen-title">Language Shield</div>
+            </div>
+            
+            <div class="translate-box">
+                <div class="lang-selector">
+                    <button class="lang-btn active">🇺🇸 EN</button>
+                    <span class="swap-btn">⇄</span>
+                    <button class="lang-btn">🇯🇵 JP</button>
+                </div>
+                <textarea class="translate-input" placeholder="Type or paste text to translate..."></textarea>
+            </div>
+            
+            <div class="translate-box">
+                <div style="color: #999; font-size: 13px; margin-bottom: 8px;">Translation</div>
+                <div class="translate-output">
+                    ここに翻訳が表示されます
+                </div>
+            </div>
+            
+            <button class="mic-btn">🎤</button>
+            <div style="text-align: center; color: #999; font-size: 13px;">Tap to speak</div>
+            
+            <div style="margin-top: 24px;">
+                <div style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">Recent Translations</div>
+                <div class="menu-list">
+                    <div class="menu-item">
+                        <div class="menu-icon">🇯🇵</div>
+                        <div class="menu-text">Where is the station?</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-icon">🇫🇷</div>
+                        <div class="menu-text">The check, please</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Screen -->
+        <div class="screen profile-screen" id="profile">
+            <div class="profile-header">
+                <div class="avatar">JD</div>
+                <div class="profile-name">John Doe</div>
+                <div class="profile-email">john@example.com</div>
+            </div>
+            
+            <div class="stats-row">
+                <div class="stat-card" style="background: #E8F5E9;">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Routes</div>
+                </div>
+                <div class="stat-card" style="background: #E3F2FD;">
+                    <div class="stat-value">48</div>
+                    <div class="stat-label">Saved</div>
+                </div>
+                <div class="stat-card" style="background: #FFF3E0;">
+                    <div class="stat-value">156</div>
+                    <div class="stat-label">Translations</div>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-title">Account</div>
+                <div class="menu-list">
+                    <div class="menu-item">
+                        <div class="menu-icon">✏️</div>
+                        <div class="menu-text">Edit Profile</div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-icon">🌐</div>
+                        <div class="menu-text">Language</div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-icon">🔔</div>
+                        <div class="menu-text">Notifications</div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-title">Support</div>
+                <div class="menu-list">
+                    <div class="menu-item">
+                        <div class="menu-icon">❓</div>
+                        <div class="menu-text">Help Center</div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-icon">🔒</div>
+                        <div class="menu-text">Privacy Policy</div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn-outline" style="margin-top: 24px; border-color: #E53935; color: #E53935;" onclick="logout()">
+                Sign Out
+            </button>
+            
+            <div style="text-align: center; margin-top: 24px; font-size: 12px; color: #ccc;">
+                NOMAD v1.0.0
+            </div>
+        </div>
+
+        <!-- Subscription Screen -->
+        <div class="screen sub-screen" id="subscription">
+            <button class="icon-btn" style="margin-bottom: 16px;" onclick="showScreen('routes')">←</button>
+            <div class="sub-title">Go Pro</div>
+            <div class="sub-subtitle">Unlock the full NOMAD experience</div>
+            
+            <div class="plan-card">
+                <div class="plan-name">Free</div>
+                <div class="plan-price">$0 <span>/ forever</span></div>
+                <ul class="plan-features">
+                    <li>3 AI routes per month</li>
+                    <li>Basic translation</li>
+                    <li>Standard compass</li>
+                </ul>
+            </div>
+            
+            <div class="plan-card popular">
+                <div class="popular-badge">POPULAR</div>
+                <div class="plan-name">Pro</div>
+                <div class="plan-price">$9.99 <span>/ month</span></div>
+                <ul class="plan-features">
+                    <li>Unlimited AI routes</li>
+                    <li>Offline maps & translation</li>
+                    <li>Priority booking</li>
+                    <li>Group expense management</li>
+                    <li>Ad-free experience</li>
+                </ul>
+            </div>
+            
+            <div class="plan-card">
+                <div class="plan-name">Team</div>
+                <div class="plan-price">$29.99 <span>/ month</span></div>
+                <ul class="plan-features">
+                    <li>Everything in Pro</li>
+                    <li>Up to 5 members</li>
+                    <li>Shared itineraries</li>
+                    <li>Split payments</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Create Route Screen -->
+        <div class="screen auth-screen" id="create">
+            <button class="icon-btn" style="margin-bottom: 16px;" onclick="showScreen('routes')">←</button>
+            <div class="auth-title">New Route</div>
+            <div class="auth-subtitle">Where are you going?</div>
+            
+            <div class="input-group">
+                <label class="input-label">Destination</label>
+                <input type="text" class="input-field" placeholder="City or country">
+            </div>
+            <div class="input-group">
+                <label class="input-label">Duration (days)</label>
+                <input type="number" class="input-field" placeholder="3">
+            </div>
+            <div class="input-group">
+                <label class="input-label">Interests</label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <span class="route-tag tag-green" style="cursor: pointer;">Food</span>
+                    <span class="route-tag tag-blue" style="cursor: pointer;">Art</span>
+                    <span class="route-tag tag-orange" style="cursor: pointer;">History</span>
+                    <span class="route-tag tag-green" style="cursor: pointer;">Nature</span>
+                </div>
+            </div>
+            
+            <button class="btn-primary" style="margin-top: 24px;" onclick="showScreen('routes')">
+                Generate Route ✨
+            </button>
+        </div>
+
+        <!-- Route Detail -->
+        <div class="screen routes-screen" id="routeDetail">
+            <button class="icon-btn" style="margin-bottom: 16px;" onclick="showScreen('routes')">←</button>
+            <div class="route-card" style="background: linear-gradient(135deg, #2E7D32, #43A047); color: white;">
+                <div class="route-city" style="color: white;">🇯🇵 Tokyo Explorer</div>
+                <div class="route-details" style="color: rgba(255,255,255,0.8);">7 days • 12 stops</div>
+            </div>
+            
+            <div style="font-size: 16px; font-weight: 600; margin: 16px 0 8px;">Day 1</div>
+            <div class="poi-list">
+                <div class="poi-item">
+                    <div class="poi-icon">🛬</div>
+                    <div class="poi-info">
+                        <div class="poi-name">Arrive at Narita Airport</div>
+                        <div class="poi-distance">09:00</div>
+                    </div>
+                </div>
+                <div class="poi-item">
+                    <div class="poi-icon">⛩️</div>
+                    <div class="poi-info">
+                        <div class="poi-name">Senso-ji Temple</div>
+                        <div class="poi-distance">11:00 • 2 hours</div>
+                    </div>
+                </div>
+                <div class="poi-item">
+                    <div class="poi-icon">🍜</div>
+                    <div class="poi-info">
+                        <div class="poi-name">Lunch at Nakamise Street</div>
+                        <div class="poi-distance">13:00 • 1.5 hours</div>
+                    </div>
+                </div>
+                <div class="poi-item">
+                    <div class="poi-icon">🌳</div>
+                    <div class="poi-info">
+                        <div class="poi-name">Ueno Park & Museums</div>
+                        <div class="poi-distance">15:00 • 3 hours</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation (shown on main screens) -->
+        <div class="bottom-nav" id="navBar" style="display: none;">
+            <div class="nav-item active" onclick="navigate('routes')">
+                <div class="nav-icon">🗺️</div>
+                <div class="nav-label">Routes</div>
+            </div>
+            <div class="nav-item" onclick="navigate('compass')">
+                <div class="nav-icon">🧭</div>
+                <div class="nav-label">Compass</div>
+            </div>
+            <div class="nav-item" onclick="navigate('translate')">
+                <div class="nav-icon">🌐</div>
+                <div class="nav-label">Translate</div>
+            </div>
+            <div class="nav-item" onclick="navigate('profile')">
+                <div class="nav-icon">👤</div>
+                <div class="nav-label">Profile</div>
+            </div>
+            <div class="nav-item" onclick="navigate('subscription')">
+                <div class="nav-icon">⭐</div>
+                <div class="nav-label">Pro</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showScreen(name) {
+            document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+                s.style.display = 'none';
+            });
+            const target = document.getElementById(name);
+            target.classList.add('active');
+            
+            // Set appropriate display based on screen type
+            if (target.classList.contains('welcome-screen') || target.classList.contains('compass-screen')) {
+                target.style.display = 'flex';
+            } else {
+                target.style.display = 'block';
+            }
+            
+            // Show/hide nav bar
+            const navBar = document.getElementById('navBar');
+            const mainScreens = ['routes', 'compass', 'translate', 'profile'];
+            navBar.style.display = mainScreens.includes(name) ? 'flex' : 'none';
+        }
+
+        function navigate(screen) {
+            showScreen(screen);
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            const index = ['routes', 'compass', 'translate', 'profile', 'subscription'].indexOf(screen);
+            if (index >= 0) {
+                document.querySelectorAll('.nav-item')[index]?.classList.add('active');
+            }
+        }
+
+        function login() {
+            showScreen('routes');
+        }
+
+        function logout() {
+            showScreen('welcome');
+        }
+
+        function showRouteDetail() {
+            showScreen('routeDetail');
+        }
+
+        // Initialize
+        const params = new URLSearchParams(window.location.search);
+        const screen = params.get('screen');
+        if (screen && document.getElementById(screen)) {
+            showScreen(screen);
+        } else {
+            showScreen('welcome');
+        }
+    </script>
+</body>
+</html>

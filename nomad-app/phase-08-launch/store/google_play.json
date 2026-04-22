@@ -1,0 +1,29 @@
+{
+  "title": "NOMAD — AI Travel Planner",
+  "short_description": "AI-powered travel planner with routes, translation, compass & bookings",
+  "full_description": "NOMAD is your intelligent travel companion that makes trip planning effortless.\n\nKEY FEATURES:\n\n🗺️ AI Route Planning\nCreate personalized travel routes based on your interests, budget, and pace. Our AI optimizes your itinerary for the best experience.\n\n🧭 Smart Compass\nNavigate with augmented reality compass that points to nearby points of interest. Never miss a hidden gem.\n\n🌐 Language Shield\nInstantly translate signs, menus, and conversations. Offline support for 50+ languages.\n\n📅 Easy Bookings\nBook excursions and activities directly through the app with GetYourGuide integration.\n\n💳 Group Payments\nSplit travel expenses with friends effortlessly. Track who paid what.\n\n⭐ Pro Features:\n• Unlimited AI route generation\n• Offline maps & translation\n• Priority booking\n• Group expense management\n• Ad-free experience\n\nWhether you're exploring a new city or backpacking across continents, NOMAD helps you travel smarter, not harder.",
+  "feature_graphic": "feature_graphic_1024x500.png",
+  "screenshots": {
+    "phone": [
+      "phone_1_welcome.png",
+      "phone_2_routes.png",
+      "phone_3_compass.png",
+      "phone_4_translate.png",
+      "phone_5_booking.png",
+      "phone_6_pro.png"
+    ],
+    "tablet_7": [
+      "tablet7_1.png",
+      "tablet7_2.png"
+    ],
+    "tablet_10": [
+      "tablet10_1.png",
+      "tablet10_2.png"
+    ]
+  },
+  "category": "Travel & Local",
+  "content_rating": "Everyone",
+  "contact_email": "support@nomad.app",
+  "contact_website": "https://nomad.app",
+  "privacy_policy": "https://nomad.app/privacy"
+}

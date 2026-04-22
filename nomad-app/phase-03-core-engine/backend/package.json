@@ -1,0 +1,31 @@
+{
+  "name": "nomad-backend",
+  "version": "0.1.0",
+  "description": "NOMAD AI Travel Planner Backend",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "jest",
+    "migrate": "node migrations/run.js"
+  },
+  "keywords": [
+    "travel",
+    "ai",
+    "planner"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.15.2",
+    "dotenv": "^17.4.2",
+    "fastify": "^5.8.5",
+    "fastify-cors": "^6.0.3",
+    "fastify-helmet": "^7.0.1",
+    "jsonwebtoken": "^9.0.3",
+    "openai": "^6.34.0",
+    "pg": "^8.20.0",
+    "redis": "^5.12.1",
+    "stripe": "^22.0.2"
+  }
+}

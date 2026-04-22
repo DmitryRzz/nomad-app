@@ -1,0 +1,34 @@
+{
+  "title": "NOMAD — AI Travel Planner",
+  "subtitle": "Plan smarter. Travel deeper.",
+  "description": "NOMAD is your AI-powered travel companion. Plan personalized routes, translate on the go, navigate with smart compass, book excursions, and manage group payments — all in one app.",
+  "keywords": ["travel", "ai", "planner", "routes", "translate", "compass", "booking", "trip"],
+  "category": "Travel",
+  "rating": "4+",
+  "screenshots": [
+    {
+      "size": "1242x2688",
+      "description": "Welcome screen with app features preview"
+    },
+    {
+      "size": "1242x2688", 
+      "description": "Route list with AI-generated travel plans"
+    },
+    {
+      "size": "1242x2688",
+      "description": "Smart compass with POI navigation"
+    },
+    {
+      "size": "1242x2688",
+      "description": "Language shield — instant translation"
+    },
+    {
+      "size": "1242x2688",
+      "description": "Booking excursions via GetYourGuide"
+    },
+    {
+      "size": "1242x2688",
+      "description": "Pro subscription plans"
+    }
+  ]
+}
