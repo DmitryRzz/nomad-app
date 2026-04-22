@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NOMAD — Neon AI</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family: 'SF Pro Display', -apple-system, sans-serif;
+  background: #050508; display:flex; justify-content:center; align-items:center;
+  min-height:100vh; padding:20px;
+}
+.phone-frame {
+  width:375px; height:812px;
+  background: #0a0a12;
+  border-radius:40px; overflow:hidden; position:relative;
+  box-shadow: 0 25px 60px -15px rgba(0,0,0,0.9), 0 0 0 12px #111118;
+}
+.notch {
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:150px; height:30px; background:#111118;
+  border-radius:0 0 20px 20px; z-index:100;
+}
+.screen { width:100%; height:100%; overflow-y:auto; display:none; padding-bottom:70px; }
+.screen.active { display:block; }
+
+/* Neon glow effects */
+.neon-card {
+  background: rgba(20,20,35,0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.neon-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, #00ff88, #00d4ff, transparent);
+  opacity: 0.6;
+}
+.neon-green { color: #00ff88; }
+.neon-cyan { color: #00d4ff; }
+.neon-purple { color: #a855f7; }
+
+/* Grid pattern background */
+.grid-bg {
+  background-image: 
+    linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Navigation */
+.bottom-nav {
+  position:absolute; bottom:0; left:0; right:0;
+  height:70px; background: rgba(10,10,18,0.9);
+  backdrop-filter: blur(30px);
+  display:flex; justify-content:space-around; align-items:center;
+  border-top: 1px solid rgba(0,255,136,0.1);
+  z-index:50; padding-bottom:10px;
+}
+.nav-item {
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  cursor:pointer; padding:8px 16px; border-radius:16px;
+  transition: all 0.3s;
+}
+.nav-item.active .nav-icon { color: #00ff88; text-shadow: 0 0 10px rgba(0,255,136,0.5); }
+.nav-item.active .nav-label { color: #00ff88; }
+.nav-icon { font-size:22px; color: rgba(255,255,255,0.3); }
+.nav-label { font-size:10px; color: rgba(255,255,255,0.3); }
+
+/* Welcome */
+.welcome-screen { padding:50px 28px 32px; text-align:center; }
+.ai-orb {
+  width:140px; height:140px; margin:0 auto 36px;
+  border-radius:50%;
+  background: radial-gradient(circle at 40% 40%, rgba(0,255,136,0.3), rgba(0,212,255,0.2), transparent 70%);
+  box-shadow: 0 0 60px rgba(0,255,136,0.2), inset 0 0 40px rgba(0,255,136,0.1);
+  display:flex; align-items:center; justify-content:center;
+  animation: aiPulse 3s ease-in-out infinite;
+}
+.ai-orb::after { content:'◉'; font-size:48px; color: #00ff88; }
+@keyframes aiPulse {
+  0%,100% { transform: scale(1); opacity:0.9; }
+  50% { transform: scale(1.08); opacity:1; }
+}
+.app-title-neon {
+  font-size:40px; font-weight:800; letter-spacing:8px;
+  color: #fff; margin-bottom:4px;
+  text-shadow: 0 0 20px rgba(0,255,136,0.3);
+}
+.app-subtitle-neon { font-size:16px; color: rgba(255,255,255,0.4); margin-bottom:48px; }
+
+.feature-grid {
+  display:grid; grid-template-columns: repeat(3, 1fr);
+  gap:12px; margin-bottom:auto;
+}
+.feature-cell {
+  padding:16px; border-radius:16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  text-align:center;
+}
+.feature-cell .icon { font-size:28px; margin-bottom:8px; }
+.feature-cell .label { font-size:11px; color: rgba(255,255,255,0.5); }
+
+.btn-neon {
+  width:100%; padding:18px; border:none; border-radius:16px;
+  font-size:16px; font-weight:600; cursor:pointer;
+  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  color: #000; margin-bottom:12px;
+  box-shadow: 0 4px 20px rgba(0,255,136,0.3);
+  transition: all 0.3s;
+}
+.btn-neon:hover { box-shadow: 0 6px 30px rgba(0,255,136,0.5); transform: translateY(-1px); }
+.btn-outline-neon {
+  width:100%; padding:18px; border:1.5px solid rgba(0,255,136,0.3);
+  border-radius:16px; font-size:16px; font-weight:600;
+  background: transparent; color: #00ff88; cursor:pointer;
+  transition: all 0.3s;
+}
+.btn-outline-neon:hover { border-color: #00ff88; background: rgba(0,255,136,0.05); }
+
+/* Routes */
+.routes-screen { padding:16px; }
+.header-neon {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px 8px 20px;
+}
+.header-title-neon {
+  font-size:28px; font-weight:700; color:#fff;
+  text-shadow: 0 0 10px rgba(0,255,136,0.2);
+}
+
+.route-neon {
+  padding: 20px; margin-bottom: 14px;
+  cursor: pointer; transition: all 0.3s;
+}
+.route-neon:hover {
+  border-color: rgba(0,255,136,0.2);
+  box-shadow: 0 4px 24px rgba(0,255,136,0.1);
+}
+.route-city-neon { font-size:20px; font-weight:700; color:#fff; margin-bottom:6px; }
+.route-meta-neon { font-size:13px; color: rgba(255,255,255,0.4); margin-bottom:12px; }
+.route-tags-neon { display:flex; gap:8px; flex-wrap:wrap; }
+.tag-neon {
+  padding: 5px 12px; border-radius: 10px;
+  font-size:12px; font-weight:500;
+  background: rgba(0,255,136,0.1); color: #00ff88;
+  border: 1px solid rgba(0,255,136,0.2);
+}
+
+/* Compass */
+.compass-screen { padding:24px; }
+.compass-neon {
+  width:270px; height:270px; border-radius:50%;
+  border: 2px solid rgba(0,255,136,0.3);
+  display:flex; align-items:center; justify-content:center;
+  position:relative; margin:32px auto;
+  box-shadow: 0 0 40px rgba(0,255,136,0.1), inset 0 0 40px rgba(0,255,136,0.05);
+}
+.compass-inner-neon {
+  width:230px; height:230px; border-radius:50%;
+  border: 1px solid rgba(0,212,255,0.2);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  position:relative;
+}
+.compass-arrow-neon {
+  width:0; height:0;
+  border-left:12px solid transparent; border-right:12px solid transparent;
+  border-bottom:60px solid #00ff88;
+  position:absolute; top:35px;
+  transform-origin: 50% 80px;
+  animation: rotate 8s linear infinite;
+  filter: drop-shadow(0 0 8px rgba(0,255,136,0.6));
+}
+
+/* Auth */
+.auth-screen { padding:40px 24px; color:#fff; }
+.auth-title-neon { font-size:32px; font-weight:700; margin-bottom:8px; }
+.auth-subtitle-neon { font-size:14px; color: rgba(255,255,255,0.4); margin-bottom:36px; }
+.input-neon {
+  width:100%; padding:16px; border-radius:14px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color:#fff; font-size:15px; margin-bottom:14px;
+}
+.input-neon:focus { outline:none; border-color:#00ff88; }
+.input-neon::placeholder { color: rgba(255,255,255,0.3); }
+
+/* Profile */
+.profile-screen { padding:24px; }
+.profile-avatar-neon {
+  width:100px; height:100px; border-radius:50%;
+  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 16px; font-size:36px; color:#000; font-weight:700;
+  box-shadow: 0 0 40px rgba(0,255,136,0.3);
+}
+.stat-neon {
+  flex:1; padding:18px; border-radius:16px; text-align:center;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.stat-value-neon { font-size:26px; font-weight:700; color:#00ff88; text-shadow: 0 0 10px rgba(0,255,136,0.3); }
+.stat-label-neon { font-size:12px; color: rgba(255,255,255,0.4); margin-top:4px; }
+
+.menu-section-neon {
+  font-size:12px; font-weight:600; color: rgba(255,255,255,0.3);
+  text-transform:uppercase; letter-spacing:1px; margin:24px 0 10px;
+}
+.menu-list-neon {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+}
+.menu-item-neon {
+  display:flex; align-items:center; padding:14px 16px;
+  cursor:pointer; transition: background 0.2s;
+}
+.menu-item-neon:hover { background: rgba(255,255,255,0.05); }
+.menu-item-neon + .menu-item-neon { border-top:1px solid rgba(255,255,255,0.05); }
+.menu-icon-neon { font-size:20px; margin-right:14px; }
+.menu-text-neon { flex:1; font-size:15px; }
+
+.hidden { display:none !important; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="notch"></div>
+
+  <div class="screen welcome-screen active" id="welcome">
+    <div class="ai-orb"></div>
+    <div class="app-title-neon">NOMAD</div>
+    <div class="app-subtitle-neon">AI Travel Planner</div>
+    <div class="feature-grid">
+      <div class="feature-cell"><div class="icon" style="color:#00ff88;">◉</div><div class="label">Routes</div></div>
+      <div class="feature-cell"><div class="icon" style="color:#00d4ff;">◉</div><div class="label">Compass</div></div>
+      <div class="feature-cell"><div class="icon" style="color:#a855f7;">◉</div><div class="label">Translate</div></div>
+    </div>
+    <div style="margin-top:auto;">
+      <button class="btn-neon" onclick="showScreen('register')">Initialize</button>
+      <button class="btn-outline-neon" onclick="showScreen('login')">Access</button>
+      <p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:16px;">Neural network powered travel planning</p>
+    </div>
+  </div>
+
+  <div class="screen auth-screen" id="login">
+    <div style="margin-top:60px;">
+      <div class="auth-title-neon">Access</div>
+      <div class="auth-subtitle-neon">Authentication required</div>
+    </div>
+    <input class="input-neon" type="email" placeholder="Identifier / Email">
+    <input class="input-neon" type="password" placeholder="Access Key">
+    <button class="btn-neon" onclick="login()">Authenticate</button>
+    <div style="text-align:center; margin-top:20px; font-size:14px; color:rgba(255,255,255,0.4);">
+      No identity? <span style="color:#00ff88; cursor:pointer;" onclick="showScreen('register')">Create</span>
+    </div>
+  </div>
+
+  <div class="screen auth-screen" id="register">
+    <div style="margin-top:40px;">
+      <div class="auth-title-neon">Initialize</div>
+      <div class="auth-subtitle-neon">New neural profile</div>
+    </div>
+    <input class="input-neon" type="text" placeholder="Designation">
+    <input class="input-neon" type="email" placeholder="Identifier">
+    <input class="input-neon" type="password" placeholder="Access Key">
+    <button class="btn-neon" onclick="login()">Create Profile</button>
+    <div style="text-align:center; margin-top:20px; font-size:14px; color:rgba(255,255,255,0.4);">
+      Existing? <span style="color:#00ff88; cursor:pointer;" onclick="showScreen('login')">Access</span>
+    </div>
+  </div>
+
+  <div class="screen routes-screen" id="routes">
+    <div class="header-neon">
+      <div class="header-title-neon">Routes</div>
+      <div style="width:40px; height:40px; border-radius:14px; background:rgba(0,255,136,0.1); display:flex; align-items:center; justify-content:center; cursor:pointer; color:#00ff88; font-size:20px;" onclick="showScreen('create')">+</div>
+    </div>
+    <div class="neon-card route-neon">
+      <div class="route-city-neon">🇯🇵 Tokyo Neural Map</div>
+      <div class="route-meta-neon">7 days • 12 nodes • Optimized</div>
+      <div class="route-tags-neon">
+        <span class="tag-neon">Culinary</span>
+        <span class="tag-neon">Culture</span>
+        <span class="tag-neon">Priority</span>
+      </div>
+    </div>
+    <div class="neon-card route-neon">
+      <div class="route-city-neon">🇫🇷 Paris Data Stream</div>
+      <div class="route-meta-neon">5 days • 8 nodes • Relaxed</div>
+      <div class="route-tags-neon">
+        <span class="tag-neon">Art</span>
+        <span class="tag-neon">History</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen compass-screen" id="compass">
+    <div style="font-size:22px; font-weight:700; color:#fff; text-align:center; margin-bottom:8px;">Neural Compass</div>
+    <div style="color:rgba(255,255,255,0.4); font-size:14px; text-align:center; margin-bottom:16px;">Signal: Tokyo.grid</div>
+    <div class="compass-neon">
+      <div class="compass-inner-neon">
+        <div class="compass-arrow-neon"></div>
+        <div style="margin-top:90px; font-size:13px; color:rgba(255,255,255,0.3);">Scanning...</div>
+      </div>
+    </div>
+    <div style="text-align:center; font-size:52px; font-weight:200; color:#00ff88; text-shadow: 0 0 20px rgba(0,255,136,0.3);">42° NE</div>
+  </div>
+
+  <div class="screen" style="padding:16px;" id="translate">
+    <div class="header-neon"><div class="header-title-neon">Language Core</div></div>
+    <div class="neon-card" style="padding:20px; margin-bottom:16px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <button style="padding:10px 18px; border-radius:20px; background:linear-gradient(135deg,#00ff88,#00d4ff); color:#000; border:none; font-size:14px; font-weight:600;">🇺🇸 EN</button>
+        <span style="font-size:20px; color:rgba(255,255,255,0.3);">⇄</span>
+        <button style="padding:10px 18px; border-radius:20px; background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.6); border:1px solid rgba(255,255,255,0.1); font-size:14px; font-weight:600;">🇯🇵 JP</button>
+      </div>
+      <textarea class="input-neon" style="min-height:100px; resize:none;" placeholder="Input stream..."></textarea>
+    </div>
+    <div class="neon-card" style="padding:20px;">
+      <div style="color:rgba(255,255,255,0.3); font-size:13px; margin-bottom:8px;">Output</div>
+      <div style="font-size:16px; color:#00ff88; min-height:60px;">翻訳データストリーム</div>
+    </div>
+  </div>
+
+  <div class="screen profile-screen" id="profile">
+    <div style="text-align:center; margin-top:20px; margin-bottom:24px;">
+      <div class="profile-avatar-neon">JD</div>
+      <div style="font-size:22px; font-weight:700; color:#fff;">John Doe</div>
+      <div style="font-size:14px; color:rgba(255,255,255,0.4); margin-top:4px;">john@node.net</div>
+    </div>
+    <div style="display:flex; gap:12px; margin-bottom:24px;">
+      <div class="stat-neon"><div class="stat-value-neon">12</div><div class="stat-label-neon">Routes</div></div>
+      <div class="stat-neon"><div class="stat-value-neon">48</div><div class="stat-label-neon">Nodes</div></div>
+      <div class="stat-neon"><div class="stat-value-neon">156</div><div class="stat-label-neon">Translations</div></div>
+    </div>
+    <div class="menu-section-neon">System</div>
+    <div class="menu-list-neon">
+      <div class="menu-item-neon"><span class="menu-icon-neon" style="color:#00ff88;">⚙</span><span class="menu-text-neon">Edit Profile</span><span style="color:rgba(255,255,255,0.2);">›</span></div>
+      <div class="menu-item-neon"><span class="menu-icon-neon" style="color:#00d4ff;">⚙</span><span class="menu-text-neon">Language</span><span style="color:rgba(255,255,255,0.2);">›</span></div>
+      <div class="menu-item-neon"><span class="menu-icon-neon" style="color:#a855f7;">⚙</span><span class="menu-text-neon">Notifications</span><span style="color:rgba(255,255,255,0.2);">›</span></div>
+    </div>
+    <button class="btn-outline-neon" style="margin-top:32px; color:#ff4444; border-color:rgba(255,68,68,0.3);" onclick="logout()">Terminate Session</button>
+  </div>
+
+  <div class="screen auth-screen" id="create">
+    <div style="margin-top:20px; margin-bottom:16px; font-size:24px; color:#fff; cursor:pointer;" onclick="showScreen('routes')">←</div>
+    <div class="auth-title-neon">New Route</div>
+    <div class="auth-subtitle-neon">Target coordinates</div>
+    <input class="input-neon" placeholder="City / Region">
+    <input class="input-neon" type="number" placeholder="Duration (cycles)">
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px;">
+      <span class="tag-neon" style="cursor:pointer;">Culinary</span>
+      <span class="tag-neon" style="cursor:pointer;">Art</span>
+      <span class="tag-neon" style="cursor:pointer;">History</span>
+    </div>
+    <button class="btn-neon" onclick="showScreen('routes')">Generate Neural Path</button>
+  </div>
+
+  <div class="bottom-nav" id="navBar" style="display:none;">
+    <div class="nav-item active" onclick="navigate('routes')"><div class="nav-icon">◉</div><div class="nav-label">Routes</div></div>
+    <div class="nav-item" onclick="navigate('compass')"><div class="nav-icon">◉</div><div class="nav-label">Compass</div></div>
+    <div class="nav-item" onclick="navigate('translate')"><div class="nav-icon">◉</div><div class="nav-label">Translate</div></div>
+    <div class="nav-item" onclick="navigate('profile')"><div class="nav-icon">◉</div><div class="nav-label">Profile</div></div>
+    <div class="nav-item" onclick="navigate('subscription')"><div class="nav-icon">◉</div><div class="nav-label">Pro</div></div>
+  </div>
+</div>
+
+<script>
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.style.display='none'; });
+  const target = document.getElementById(name);
+  target.classList.add('active'); target.style.display='block';
+  const navBar = document.getElementById('navBar');
+  const mainScreens = ['routes','compass','translate','profile'];
+  navBar.style.display = mainScreens.includes(name) ? 'flex' : 'none';
+}
+function navigate(screen) {
+  showScreen(screen);
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const idx = ['routes','compass','translate','profile','subscription'].indexOf(screen);
+  if(idx>=0) document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
+}
+function login() { showScreen('routes'); }
+function logout() { showScreen('welcome'); }
+showScreen('welcome');
+</script>
+</body>
+</html>

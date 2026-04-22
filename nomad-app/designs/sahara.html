@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NOMAD — Sahara Journal</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  background: #f5e6d3; display:flex; justify-content:center; align-items:center;
+  min-height:100vh; padding:20px;
+}
+.phone-frame {
+  width:375px; height:812px;
+  background: #faf3eb;
+  border-radius:40px; overflow:hidden; position:relative;
+  box-shadow: 0 25px 50px -12px rgba(139,90,43,0.3), 0 0 0 12px #e8d5c4;
+}
+.notch {
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:150px; height:30px; background:#e8d5c4;
+  border-radius:0 0 20px 20px; z-index:100;
+}
+.screen { width:100%; height:100%; overflow-y:auto; display:none; padding-bottom:70px; }
+.screen.active { display:block; }
+
+/* Paper texture */
+.paper-card {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(139,90,43,0.08);
+  border: 1px solid rgba(139,90,43,0.08);
+}
+.paper-card-warm {
+  background: linear-gradient(135deg, #fff 0%, #fdf6ed 100%);
+  border-radius: 20px;
+  box-shadow: 0 2px 16px rgba(210,140,80,0.12);
+  border: 1px solid rgba(210,140,80,0.1);
+}
+
+/* Handwritten feel elements */
+.handwritten { font-family: 'Brush Script MT', 'Segoe Script', cursive; }
+
+/* Colors */
+.sand-dark { color: #8b5a2b; }
+.sand { color: #c4956a; }
+.sand-light { color: #d4a574; }
+.terra { color: #c75b39; }
+
+/* Navigation */
+.bottom-nav {
+  position:absolute; bottom:0; left:0; right:0;
+  height:70px; background: #faf3eb;
+  display:flex; justify-content:space-around; align-items:center;
+  border-top: 2px solid rgba(139,90,43,0.08);
+  z-index:50; padding-bottom:10px;
+}
+.nav-item {
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  cursor:pointer; padding:8px 16px; border-radius:16px;
+  transition: all 0.3s;
+}
+.nav-item:hover { background: rgba(139,90,43,0.05); }
+.nav-item.active .nav-icon { color: #c75b39; }
+.nav-item.active .nav-label { color: #c75b39; font-weight:600; }
+.nav-icon { font-size:22px; color: #c4956a; }
+.nav-label { font-size:10px; color: #c4956a; }
+
+/* Welcome */
+.welcome-screen { padding:50px 28px 32px; text-align:center; }
+.stamp-circle {
+  width:130px; height:130px; margin:0 auto 32px;
+  border-radius:50%; border: 3px solid #c75b39;
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+}
+.stamp-circle::before {
+  content:''; position:absolute; inset:8px; border-radius:50%;
+  border: 1.5px dashed #d4a574;
+}
+.stamp-icon { font-size:48px; }
+.app-title-sahara {
+  font-size:38px; font-weight:700; color: #5c3a21;
+  letter-spacing: 4px; margin-bottom:8px;
+  font-family: Georgia, serif;
+}
+.app-subtitle-sahara {
+  font-size:16px; color: #c4956a; margin-bottom:8px;
+}
+.tagline-sahara {
+  font-family: 'Brush Script MT', cursive;
+  font-size:20px; color: #d4a574; margin-bottom:40px;
+}
+
+.feature-stamps {
+  display:flex; justify-content:center; gap:24px; margin-bottom:auto;
+}
+.stamp {
+  text-align:center;
+}
+.stamp-box {
+  width:60px; height:60px; border-radius:16px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px; margin-bottom:8px;
+}
+.stamp-label { font-size:12px; color: #8b5a2b; }
+
+.btn-sahara {
+  width:100%; padding:18px; border:none; border-radius:16px;
+  font-size:16px; font-weight:600; cursor:pointer;
+  background: #c75b39; color: white;
+  box-shadow: 0 4px 16px rgba(199,91,57,0.3);
+  transition: all 0.3s;
+}
+.btn-sahara:hover { background: #b54d2e; transform: translateY(-1px); }
+.btn-sahara-outline {
+  width:100%; padding:18px; border:2px solid #c75b39;
+  border-radius:16px; font-size:16px; font-weight:600;
+  background: transparent; color: #c75b39; cursor:pointer;
+  margin-top:12px;
+}
+
+/* Routes */
+.routes-screen { padding:16px; }
+.header-sahara {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px 8px 20px;
+}
+.header-title-sahara {
+  font-size:28px; font-weight:700; color: #5c3a21;
+}
+
+.route-journal {
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(139,90,43,0.08);
+  border-left: 4px solid #c75b39;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.route-journal:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 20px rgba(139,90,43,0.15);
+}
+.route-city-sahara { font-size:20px; font-weight:700; color: #5c3a21; margin-bottom:6px; }
+.route-meta-sahara { font-size:13px; color: #c4956a; margin-bottom:12px; }
+.route-tags-sahara { display:flex; gap:8px; flex-wrap:wrap; }
+.tag-sahara {
+  padding: 5px 12px; border-radius: 10px;
+  font-size:12px; font-weight:500;
+  background: #fdf0e6; color: #8b5a2b;
+  border: 1px solid rgba(139,90,43,0.15);
+}
+
+/* Compass */
+.compass-screen { padding:24px; }
+.compass-sahara {
+  width:260px; height:260px; border-radius:50%;
+  border: 3px solid #d4a574;
+  display:flex; align-items:center; justify-content:center;
+  position:relative; margin:32px auto;
+  background: #fff;
+  box-shadow: 0 8px 32px rgba(139,90,43,0.15);
+}
+.compass-inner-sahara {
+  width:220px; height:220px; border-radius:50%;
+  border: 2px dashed #e8d5c4;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  position:relative;
+}
+.compass-arrow-sahara {
+  width:0; height:0;
+  border-left:12px solid transparent; border-right:12px solid transparent;
+  border-bottom:60px solid #c75b39;
+  position:absolute; top:30px;
+  transform-origin: 50% 80px;
+  animation: rotate 8s linear infinite;
+}
+
+/* Auth */
+.auth-screen { padding:40px 24px; }
+.auth-title-sahara { font-size:32px; font-weight:700; color:#5c3a21; margin-bottom:8px; }
+.auth-subtitle-sahara { font-size:14px; color:#c4956a; margin-bottom:36px; }
+.input-sahara {
+  width:100%; padding:16px; border-radius:14px;
+  background: #fff;
+  border: 2px solid #e8d5c4;
+  color:#5c3a21; font-size:15px; font-family: Georgia, serif;
+  margin-bottom:14px;
+}
+.input-sahara:focus { outline:none; border-color:#c75b39; }
+.input-sahara::placeholder { color: #c4956a; }
+
+/* Profile */
+.profile-screen { padding:24px; }
+.profile-avatar-sahara {
+  width:100px; height:100px; border-radius:50%;
+  border: 3px solid #c75b39;
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 16px; font-size:36px; color:#5c3a21; font-weight:700;
+  background: #fff;
+}
+.stat-sahara {
+  flex:1; padding:18px; border-radius:16px; text-align:center;
+  background: #fff;
+  border: 1px solid rgba(139,90,43,0.1);
+}
+.stat-value-sahara { font-size:26px; font-weight:700; color:#c75b39; }
+.stat-label-sahara { font-size:12px; color:#c4956a; margin-top:4px; }
+
+.menu-section-title-sahara {
+  font-size:11px; font-weight:700; color:#c4956a;
+  text-transform:uppercase; letter-spacing:1.5px; margin:24px 0 10px;
+}
+.menu-list-sahara {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(139,90,43,0.08);
+}
+.menu-item-sahara {
+  display:flex; align-items:center; padding:14px 16px;
+  cursor:pointer;
+}
+.menu-item-sahara + .menu-item-sahara { border-top:1px solid rgba(139,90,43,0.08); }
+.menu-icon-sahara { font-size:20px; margin-right:14px; }
+.menu-text-sahara { flex:1; font-size:15px; color:#5c3a21; }
+
+.hidden { display:none !important; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="notch"></div>
+
+  <div class="screen welcome-screen active" id="welcome">
+    <div class="stamp-circle"><div class="stamp-icon">🧭</div></div>
+    <div class="app-title-sahara">NOMAD</div>
+    <div class="app-subtitle-sahara">AI Travel Planner</div>
+    <div class="tagline-sahara">Wander with wisdom</div>
+    <div class="feature-stamps">
+      <div class="stamp">
+        <div class="stamp-box" style="background:#fdf0e6;">🗺️</div>
+        <div class="stamp-label">Routes</div>
+      </div>
+      <div class="stamp">
+        <div class="stamp-box" style="background:#fdf0e6;">🌐</div>
+        <div class="stamp-label">Translate</div>
+      </div>
+      <div class="stamp">
+        <div class="stamp-box" style="background:#fdf0e6;">🧭</div>
+        <div class="stamp-label">Compass</div>
+      </div>
+    </div>
+    <div style="margin-top:auto;">
+      <button class="btn-sahara" onclick="showScreen('register')">Begin Journey</button>
+      <button class="btn-sahara-outline" onclick="showScreen('login')">Sign In</button>
+    </div>
+  </div>
+
+  <div class="screen auth-screen" id="login">
+    <div style="margin-top:60px;">
+      <div class="auth-title-sahara">Welcome back</div>
+      <div class="auth-subtitle-sahara">Continue your exploration</div>
+    </div>
+    <input class="input-sahara" type="email" placeholder="Email">
+    <input class="input-sahara" type="password" placeholder="Password">
+    <div style="text-align:right; font-size:13px; color:#c4956a; margin-bottom:24px;">Forgot password?</div>
+    <button class="btn-sahara" onclick="login()">Sign In</button>
+    <div style="text-align:center; margin-top:20px; font-size:14px; color:#c4956a;">
+      New? <span style="color:#c75b39; cursor:pointer;" onclick="showScreen('register')">Create account</span>
+    </div>
+  </div>
+
+  <div class="screen auth-screen" id="register">
+    <div style="margin-top:40px;">
+      <div class="auth-title-sahara">Get Started</div>
+      <div class="auth-subtitle-sahara">Your journey begins now</div>
+    </div>
+    <input class="input-sahara" type="text" placeholder="Full Name">
+    <input class="input-sahara" type="email" placeholder="Email">
+    <input class="input-sahara" type="password" placeholder="Password">
+    <button class="btn-sahara" onclick="login()">Create Account</button>
+    <div style="text-align:center; margin-top:20px; font-size:14px; color:#c4956a;">
+      Have account? <span style="color:#c75b39; cursor:pointer;" onclick="showScreen('login')">Sign In</span>
+    </div>
+  </div>
+
+  <div class="screen routes-screen" id="routes">
+    <div class="header-sahara">
+      <div class="header-title-sahara">My Routes</div>
+      <div style="width:40px; height:40px; border-radius:14px; background:#fdf0e6; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#c75b39; font-size:20px;" onclick="showScreen('create')">+</div>
+    </div>
+    <div class="route-journal">
+      <div class="route-city-sahara">🇯🇵 Tokyo, Japan</div>
+      <div class="route-meta-sahara">7 days • 12 stops • Balanced pace</div>
+      <div class="route-tags-sahara">
+        <span class="tag-sahara">Food</span>
+        <span class="tag-sahara">Culture</span>
+      </div>
+    </div>
+    <div class="route-journal">
+      <div class="route-city-sahara">🇫🇷 Paris, France</div>
+      <div class="route-meta-sahara">5 days • 8 stops • Relaxed pace</div>
+      <div class="route-tags-sahara">
+        <span class="tag-sahara">Art</span>
+        <span class="tag-sahara">History</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen compass-screen" id="compass">
+    <div style="font-size:22px; font-weight:700; color:#5c3a21; text-align:center; margin-bottom:8px;">Smart Compass</div>
+    <div style="color:#c4956a; font-size:14px; text-align:center; margin-bottom:16px;">Tokyo, Japan</div>
+    <div class="compass-sahara">
+      <div class="compass-inner-sahara">
+        <div class="compass-arrow-sahara"></div>
+        <div style="margin-top:80px; font-size:13px; color:#c4956a;">Calibrating...</div>
+      </div>
+    </div>
+    <div style="text-align:center; font-size:48px; font-weight:200; color:#5c3a21;">42° NE</div>
+  </div>
+
+  <div class="screen" style="padding:16px;" id="translate">
+    <div class="header-sahara">
+      <div class="header-title-sahara">Language Shield</div>
+    </div>
+    <div class="paper-card-warm" style="padding:20px; margin-bottom:16px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <button style="padding:10px 18px; border-radius:20px; background:#c75b39; color:#fff; border:none; font-size:14px; font-weight:600;">🇺🇸 EN</button>
+        <span style="font-size:20px; color:#c4956a;">⇄</span>
+        <button style="padding:10px 18px; border-radius:20px; background:#fdf0e6; color:#8b5a2b; border:1px solid #e8d5c4; font-size:14px; font-weight:600;">🇯🇵 JP</button>
+      </div>
+      <textarea class="input-sahara" style="min-height:100px; resize:none; border-color:#e8d5c4;" placeholder="Type to translate..."></textarea>
+    </div>
+    <div class="paper-card-warm" style="padding:20px;">
+      <div style="color:#c4956a; font-size:13px; margin-bottom:8px;">Translation</div>
+      <div style="font-size:16px; color:#c75b39; min-height:60px;">ここに翻訳が表示されます</div>
+    </div>
+  </div>
+
+  <div class="screen profile-screen" id="profile">
+    <div style="text-align:center; margin-top:20px; margin-bottom:24px;">
+      <div class="profile-avatar-sahara">JD</div>
+      <div style="font-size:22px; font-weight:700; color:#5c3a21;">John Doe</div>
+      <div style="font-size:14px; color:#c4956a; margin-top:4px;">john@example.com</div>
+    </div>
+    <div style="display:flex; gap:12px; margin-bottom:24px;">
+      <div class="stat-sahara"><div class="stat-value-sahara">12</div><div class="stat-label-sahara">Routes</div></div>
+      <div class="stat-sahara"><div class="stat-value-sahara">48</div><div class="stat-label-sahara">Saved</div></div>
+      <div class="stat-sahara"><div class="stat-value-sahara">156</div><div class="stat-label-sahara">Translations</div></div>
+    </div>
+    <div class="menu-section-title-sahara">Account</div>
+    <div class="menu-list-sahara">
+      <div class="menu-item-sahara"><span class="menu-icon-sahara">✏️</span><span class="menu-text-sahara">Edit Profile</span><span style="color:#c4956a;">›</span></div>
+      <div class="menu-item-sahara"><span class="menu-icon-sahara">🌐</span><span class="menu-text-sahara">Language</span><span style="color:#c4956a;">›</span></div>
+      <div class="menu-item-sahara"><span class="menu-icon-sahara">🔔</span><span class="menu-text-sahara">Notifications</span><span style="color:#c4956a;">›</span></div>
+    </div>
+    <button class="btn-sahara-outline" style="margin-top:32px; color:#c75b39;" onclick="logout()">Sign Out</button>
+  </div>
+
+  <div class="screen auth-screen" id="create">
+    <div style="margin-top:20px; margin-bottom:16px; font-size:24px; color:#5c3a21; cursor:pointer;" onclick="showScreen('routes')">←</div>
+    <div class="auth-title-sahara">New Route</div>
+    <div class="auth-subtitle-sahara">Where are you going?</div>
+    <input class="input-sahara" placeholder="City or country">
+    <input class="input-sahara" type="number" placeholder="Duration (days)">
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px;">
+      <span class="tag-sahara" style="cursor:pointer;">Food</span>
+      <span class="tag-sahara" style="cursor:pointer;">Art</span>
+      <span class="tag-sahara" style="cursor:pointer;">History</span>
+    </div>
+    <button class="btn-sahara" onclick="showScreen('routes')">Generate Route ✨</button>
+  </div>
+
+  <div class="bottom-nav" id="navBar" style="display:none;">
+    <div class="nav-item active" onclick="navigate('routes')"><div class="nav-icon">🗺️</div><div class="nav-label">Routes</div></div>
+    <div class="nav-item" onclick="navigate('compass')"><div class="nav-icon">🧭</div><div class="nav-label">Compass</div></div>
+    <div class="nav-item" onclick="navigate('translate')"><div class="nav-icon">🌐</div><div class="nav-label">Translate</div></div>
+    <div class="nav-item" onclick="navigate('profile')"><div class="nav-icon">👤</div><div class="nav-label">Profile</div></div>
+    <div class="nav-item" onclick="navigate('subscription')"><div class="nav-icon">⭐</div><div class="nav-label">Pro</div></div>
+  </div>
+</div>
+
+<script>
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.style.display='none'; });
+  const target = document.getElementById(name);
+  target.classList.add('active'); target.style.display='block';
+  const navBar = document.getElementById('navBar');
+  const mainScreens = ['routes','compass','translate','profile'];
+  navBar.style.display = mainScreens.includes(name) ? 'flex' : 'none';
+}
+function navigate(screen) {
+  showScreen(screen);
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const idx = ['routes','compass','translate','profile','subscription'].indexOf(screen);
+  if(idx>=0) document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
+}
+function login() { showScreen('routes'); }
+function logout() { showScreen('welcome'); }
+showScreen('welcome');
+</script>
+</body>
+</html>

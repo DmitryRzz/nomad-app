@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NOMAD — Nordic Clean</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f0f2f5; display:flex; justify-content:center; align-items:center;
+  min-height:100vh; padding:20px;
+}
+.phone-frame {
+  width:375px; height:812px;
+  background: #ffffff;
+  border-radius:40px; overflow:hidden; position:relative;
+  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1), 0 0 0 12px #e8eaed;
+}
+.notch {
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:150px; height:30px; background:#e8eaed;
+  border-radius:0 0 20px 20px; z-index:100;
+}
+.screen { width:100%; height:100%; overflow-y:auto; display:none; padding-bottom:70px; }
+.screen.active { display:block; }
+
+/* Nordic minimal cards */
+.nordic-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+  border: 1px solid #f0f0f0;
+}
+
+/* Colors - forest green + warm grey */
+.forest { color: #2d6a4f; }
+.forest-bg { background: #2d6a4f; }
+.warm-grey { color: #6c757d; }
+
+/* Navigation */
+.bottom-nav {
+  position:absolute; bottom:0; left:0; right:0;
+  height:70px; background: #fff;
+  display:flex; justify-content:space-around; align-items:center;
+  border-top: 1px solid #f0f0f0;
+  z-index:50; padding-bottom:10px;
+}
+.nav-item {
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  cursor:pointer; padding:8px 16px; border-radius:16px;
+  transition: all 0.3s;
+}
+.nav-item:hover { background: #f8f9fa; }
+.nav-item.active .nav-icon { color: #2d6a4f; }
+.nav-item.active .nav-label { color: #2d6a4f; font-weight:600; }
+.nav-icon { font-size:22px; color: #adb5bd; }
+.nav-label { font-size:10px; color: #adb5bd; }
+
+/* Welcome */
+.welcome-screen { padding:60px 32px 32px; text-align:center; }
+.nordic-logo {
+  width:80px; height:80px; margin:0 auto 32px;
+  background: #2d6a4f; border-radius:20px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:36px; color:#fff;
+}
+.app-title-nordic {
+  font-size:32px; font-weight:700; color: #212529;
+  letter-spacing: 6px; margin-bottom:8px;
+}
+.app-subtitle-nordic { font-size:15px; color: #6c757d; margin-bottom:48px; }
+
+.features-nordic {
+  display:flex; justify-content:center; gap:32px; margin-bottom:auto;
+}
+.feature-nordic {
+  text-align:center;
+}
+.feature-circle {
+  width:56px; height:56px; border-radius:50%;
+  background: #f8f9fa;
+  display:flex; align-items:center; justify-content:center;
+  font-size:24px; margin:0 auto 8px;
+}
+.feature-label-nordic { font-size:12px; color: #6c757d; font-weight:500; }
+
+.btn-nordic {
+  width:100%; padding:16px; border:none; border-radius:12px;
+  font-size:16px; font-weight:600; cursor:pointer;
+  background: #2d6a4f; color: white; margin-bottom:12px;
+  transition: all 0.2s;
+}
+.btn-nordic:hover { background: #245d44; }
+.btn-nordic-outline {
+  width:100%; padding:16px; border:1.5px solid #e9ecef;
+  border-radius:12px; font-size:16px; font-weight:600;
+  background: #fff; color: #495057; cursor:pointer;
+}
+.btn-nordic-outline:hover { border-color: #2d6a4f; color: #2d6a4f; }
+
+/* Routes */
+.routes-screen { padding:16px; }
+.header-nordic {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px 8px 20px;
+}
+.header-title-nordic {
+  font-size:26px; font-weight:700; color:#212529;
+}
+
+.route-nordic {
+  padding: 20px; margin-bottom: 12px;
+  cursor: pointer; transition: all 0.2s;
+}
+.route-nordic:hover { 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+}
+.route-city-nordic { font-size:18px; font-weight:700; color:#212529; margin-bottom:4px; }
+.route-meta-nordic { font-size:13px; color: #6c757d; margin-bottom:12px; }
+.route-tags-nordic { display:flex; gap:8px; flex-wrap:wrap; }
+.tag-nordic {
+  padding: 4px 12px; border-radius: 8px;
+  font-size:12px; font-weight:500;
+  background: #e9ecef; color: #495057;
+}
+
+/* Compass */
+.compass-screen { padding:24px; }
+.compass-nordic {
+  width:240px; height:240px; border-radius:50%;
+  border: 2px solid #e9ecef;
+  display:flex; align-items:center; justify-content:center;
+  position:relative; margin:32px auto;
+  background: #fff;
+}
+.compass-inner-nordic {
+  width:200px; height:200px; border-radius:50%;
+  border: 1px solid #f0f0f0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  position:relative;
+}
+.compass-arrow-nordic {
+  width:0; height:0;
+  border-left:10px solid transparent; border-right:10px solid transparent;
+  border-bottom:50px solid #2d6a4f;
+  position:absolute; top:25px;
+  transform-origin: 50% 75px;
+  animation: rotate 8s linear infinite;
+}
+
+/* Auth */
+.auth-screen { padding:40px 24px; }
+.auth-title-nordic { font-size:30px; font-weight:700; color:#212529; margin-bottom:8px; }
+.auth-subtitle-nordic { font-size:14px; color:#6c757d; margin-bottom:36px; }
+.input-nordic {
+  width:100%; padding:14px 16px; border-radius:12px;
+  background: #fff;
+  border: 1.5px solid #e9ecef;
+  color:#212529; font-size:15px; margin-bottom:14px;
+  transition: border-color 0.2s;
+}
+.input-nordic:focus { outline:none; border-color: #2d6a4f; }
+.input-nordic::placeholder { color: #adb5bd; }
+
+/* Profile */
+.profile-screen { padding:24px; }
+.profile-avatar-nordic {
+  width:80px; height:80px; border-radius:50%;
+  background: #2d6a4f;
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 16px; font-size:32px; color:#fff; font-weight:600;
+}
+.stat-nordic {
+  flex:1; padding:16px; border-radius:12px; text-align:center;
+  background: #f8f9fa;
+}
+.stat-value-nordic { font-size:24px; font-weight:700; color:#2d6a4f; }
+.stat-label-nordic { font-size:12px; color:#6c757d; margin-top:4px; }
+
+.menu-section-nordic {
+  font-size:11px; font-weight:700; color:#adb5bd;
+  text-transform:uppercase; letter-spacing:1px; margin:24px 0 10px;
+}
+.menu-list-nordic {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  overflow:hidden;
+}
+.menu-item-nordic {
+  display:flex; align-items:center; padding:14px 16px;
+  cursor:pointer; transition: background 0.2s;
+}
+.menu-item-nordic:hover { background: #f8f9fa; }
+.menu-item-nordic + .menu-item-nordic { border-top:1px solid #f0f0f0; }
+.menu-icon-nordic { font-size:20px; margin-right:14px; color:#6c757d; }
+.menu-text-nordic { flex:1; font-size:15px; color:#212529; }
+
+.hidden { display:none !important; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="notch"></div>
+
+  <div class="screen welcome-screen active" id="welcome">
+    <div class="nordic-logo">🌲</div>
+    <div class="app-title-nordic">NOMAD</div>
+    <div class="app-subtitle-nordic">Simple. Smart. Sustainable travel.</div>
+    <div class="features-nordic">
+      <div class="feature-nordic">
+        <div class="feature-circle">🗺️</div>
+        <div class="feature-label-nordic">Routes</div>
+      </div>
+      <div class="feature-nordic">
+        <div class="feature-circle">🧭</div>
+        <div class="feature-label-nordic">Compass</div>
+      </div>
+      <div class="feature-nordic">
+        <div class="feature-circle">🌐</div>
+        <div class="feature-label-nordic">Translate</div>
+      </div>
+    </div>
+    <div style="margin-top:auto;">
+      <button class="btn-nordic" onclick="showScreen('register')">Get Started</button>
+      <button class="btn-nordic-outline" onclick="showScreen('login')">I have an account</button>
+    </div>
+  </div>
+
+  <div class="screen auth-screen" id="login">
+    <div style="margin-top:60px;">
+      <div class="auth-title-nordic">Welcome back</div>
+      <div class="auth-subtitle-nordic">Continue your journey</div>
+    </div>
+    <input class="input-nordic" type="email" placeholder="Email">
+    <input class="input-nordic" type="password" placeholder="Password">
+    <div style="text-align:right; font-size:13px; color:#6c757d; margin-bottom:24px;">Forgot password?</div>
+    <button class="btn-nordic" onclick="login()">Sign In</button>
+    <div style="text-align:center; margin-top:20px; font-size:14px; color:#6c757d;">
+      New? <span style="color:#2d6a4f; cursor:pointer; font-weight:600;" onclick="showScreen('register')">Create account</span>
+    </div>
+  </div>
+
+  <div class="screen auth-screen" id="register">
+    <div style="margin-top:40px;">
+      <div class="auth-title-nordic">Get Started</div>
+      <div class="auth-subtitle-nordic">Start exploring mindfully</div>
+    </div>
+    <input class="input-nordic" type="text" placeholder="Full Name">
+    <input class="input-nordic" type="email" placeholder="Email">
+    <input class="input-nordic" type="password" placeholder="Password (min 8)">
+    <button class="btn-nordic" onclick="login()">Create Account</button>
+    <div style="text-align:center; margin-top:20px; font-size:14px; color:#6c757d;">
+      Have account? <span style="color:#2d6a4f; cursor:pointer; font-weight:600;" onclick="showScreen('login')">Sign In</span>
+    </div>
+  </div>
+
+  <div class="screen routes-screen" id="routes">
+    <div class="header-nordic">
+      <div class="header-title-nordic">My Routes</div>
+      <div style="width:36px; height:36px; border-radius:10px; background:#e9ecef; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#2d6a4f; font-size:18px;" onclick="showScreen('create')">+</div>
+    </div>
+    <div class="nordic-card route-nordic">
+      <div class="route-city-nordic">🇯🇵 Tokyo, Japan</div>
+      <div class="route-meta-nordic">7 days • 12 stops • Balanced pace</div>
+      <div class="route-tags-nordic">
+        <span class="tag-nordic">Food</span>
+        <span class="tag-nordic">Culture</span>
+      </div>
+    </div>
+    <div class="nordic-card route-nordic">
+      <div class="route-city-nordic">🇫🇷 Paris, France</div>
+      <div class="route-meta-nordic">5 days • 8 stops • Relaxed pace</div>
+      <div class="route-tags-nordic">
+        <span class="tag-nordic">Art</span>
+        <span class="tag-nordic">History</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen compass-screen" id="compass">
+    <div style="font-size:20px; font-weight:700; color:#212529; text-align:center; margin-bottom:8px;">Smart Compass</div>
+    <div style="color:#6c757d; font-size:14px; text-align:center; margin-bottom:16px;">Tokyo, Japan</div>
+    <div class="compass-nordic">
+      <div class="compass-inner-nordic">
+        <div class="compass-arrow-nordic"></div>
+        <div style="margin-top:70px; font-size:13px; color:#adb5bd;">Calibrating...</div>
+      </div>
+    </div>
+    <div style="text-align:center; font-size:44px; font-weight:300; color:#2d6a4f;">42° NE</div>
+  </div>
+
+  <div class="screen" style="padding:16px;" id="translate">
+    <div class="header-nordic"><div class="header-title-nordic">Language Shield</div></div>
+    <div class="nordic-card" style="padding:20px; margin-bottom:16px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <button style="padding:8px 16px; border-radius:20px; background:#2d6a4f; color:#fff; border:none; font-size:14px; font-weight:600;">🇺🇸 EN</button>
+        <span style="font-size:20px; color:#adb5bd;">⇄</span>
+        <button style="padding:8px 16px; border-radius:20px; background:#f8f9fa; color:#495057; border:1px solid #e9ecef; font-size:14px; font-weight:600;">🇯🇵 JP</button>
+      </div>
+      <textarea class="input-nordic" style="min-height:100px; resize:none;" placeholder="Type to translate..."></textarea>
+    </div>
+    <div class="nordic-card" style="padding:20px;">
+      <div style="color:#adb5bd; font-size:13px; margin-bottom:8px;">Translation</div>
+      <div style="font-size:16px; color:#2d6a4f; min-height:60px;">ここに翻訳が表示されます</div>
+    </div>
+  </div>
+
+  <div class="screen profile-screen" id="profile">
+    <div style="text-align:center; margin-top:20px; margin-bottom:24px;">
+      <div class="profile-avatar-nordic">JD</div>
+      <div style="font-size:20px; font-weight:700; color:#212529;">John Doe</div>
+      <div style="font-size:14px; color:#6c757d; margin-top:4px;">john@example.com</div>
+    </div>
+    <div style="display:flex; gap:12px; margin-bottom:24px;">
+      <div class="stat-nordic"><div class="stat-value-nordic">12</div><div class="stat-label-nordic">Routes</div></div>
+      <div class="stat-nordic"><div class="stat-value-nordic">48</div><div class="stat-label-nordic">Saved</div></div>
+      <div class="stat-nordic"><div class="stat-value-nordic">156</div><div class="stat-label-nordic">Translations</div></div>
+    </div>
+    <div class="menu-section-nordic">Account</div>
+    <div class="menu-list-nordic">
+      <div class="menu-item-nordic"><span class="menu-icon-nordic">✏️</span><span class="menu-text-nordic">Edit Profile</span><span style="color:#adb5bd;">›</span></div>
+      <div class="menu-item-nordic"><span class="menu-icon-nordic">🌐</span><span class="menu-text-nordic">Language</span><span style="color:#adb5bd;">›</span></div>
+      <div class="menu-item-nordic"><span class="menu-icon-nordic">🔔</span><span class="menu-text-nordic">Notifications</span><span style="color:#adb5bd;">›</span></div>
+    </div>
+    <button class="btn-nordic-outline" style="margin-top:32px; color:#dc3545; border-color:#ffcdd2;" onclick="logout()">Sign Out</button>
+  </div>
+
+  <div class="screen auth-screen" id="create">
+    <div style="margin-top:20px; margin-bottom:16px; font-size:24px; color:#212529; cursor:pointer;" onclick="showScreen('routes')">←</div>
+    <div class="auth-title-nordic">New Route</div>
+    <div class="auth-subtitle-nordic">Where are you going?</div>
+    <input class="input-nordic" placeholder="City or country">
+    <input class="input-nordic" type="number" placeholder="Duration (days)">
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px;">
+      <span class="tag-nordic" style="cursor:pointer;">Food</span>
+      <span class="tag-nordic" style="cursor:pointer;">Art</span>
+      <span class="tag-nordic" style="cursor:pointer;">History</span>
+    </div>
+    <button class="btn-nordic" onclick="showScreen('routes')">Generate Route ✨</button>
+  </div>
+
+  <div class="bottom-nav" id="navBar" style="display:none;">
+    <div class="nav-item active" onclick="navigate('routes')"><div class="nav-icon">🗺️</div><div class="nav-label">Routes</div></div>
+    <div class="nav-item" onclick="navigate('compass')"><div class="nav-icon">🧭</div><div class="nav-label">Compass</div></div>
+    <div class="nav-item" onclick="navigate('translate')"><div class="nav-icon">🌐</div><div class="nav-label">Translate</div></div>
+    <div class="nav-item" onclick="navigate('profile')"><div class="nav-icon">👤</div><div class="nav-label">Profile</div></div>
+    <div class="nav-item" onclick="navigate('subscription')"><div class="nav-icon">⭐</div><div class="nav-label">Pro</div></div>
+  </div>
+</div>
+
+<script>
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.style.display='none'; });
+  const target = document.getElementById(name);
+  target.classList.add('active'); target.style.display='block';
+  const navBar = document.getElementById('navBar');
+  const mainScreens = ['routes','compass','translate','profile'];
+  navBar.style.display = mainScreens.includes(name) ? 'flex' : 'none';
+}
+function navigate(screen) {
+  showScreen(screen);
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const idx = ['routes','compass','translate','profile','subscription'].indexOf(screen);
+  if(idx>=0) document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
+}
+function login() { showScreen('routes'); }
+function logout() { showScreen('welcome'); }
+showScreen('welcome');
+</script>
+</body>
+</html>
