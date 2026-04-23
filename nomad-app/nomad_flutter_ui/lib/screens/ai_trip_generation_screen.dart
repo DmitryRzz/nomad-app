@@ -120,37 +120,22 @@ class _AITripGenerationScreenState extends ConsumerState<AITripGenerationScreen>
           ),
           const SizedBox(height: 24),
 
-          // Budget
-          _buildSectionTitle('Budget Level'),
-          const SizedBox(height: 12),
-          _buildSegmentedControl(
-            options: ['budget', 'moderate', 'luxury'],
-            labels: ['Budget', 'Moderate', 'Luxury'],
-            selected: _budgetLevel,
-            onChanged: (v) => setState(() => _budgetLevel = v),
-          ),
-          const SizedBox(height: 24),
-
-          // Intensity
-          _buildSectionTitle('Trip Intensity'),
-          const SizedBox(height: 12),
-          _buildSegmentedControl(
-            options: ['relaxed', 'balanced', 'intense'],
-            labels: ['Relaxed', 'Balanced', 'Intense'],
-            selected: _intensity,
-            onChanged: (v) => setState(() => _intensity = v),
-          ),
-          const SizedBox(height: 24),
-
           // Transport
           _buildSectionTitle('Transport Mode'),
           const SizedBox(height: 12),
-          _buildSegmentedControl(
-            options: ['air', 'land', 'sea', 'mixed'],
-            labels: ['Air', 'Land', 'Sea', 'Mixed'],
-            selected: _transportMode,
-            onChanged: (v) => setState(() => _transportMode = v),
-          ),
+          _buildTransportSelector(),
+          const SizedBox(height: 24),
+
+          // Budget with visual indicator
+          _buildSectionTitle('Budget Level'),
+          const SizedBox(height: 12),
+          _buildBudgetSelector(),
+          const SizedBox(height: 24),
+
+          // Intensity with visual indicator
+          _buildSectionTitle('Trip Intensity'),
+          const SizedBox(height: 12),
+          _buildIntensitySelector(),
           const SizedBox(height: 24),
 
           // Interests
@@ -465,53 +450,238 @@ class _AITripGenerationScreenState extends ConsumerState<AITripGenerationScreen>
     );
   }
 
-  Widget _buildSegmentedControl({
-    required List<String> options,
-    required List<String> labels,
-    required String selected,
-    required Function(String) onChanged,
-  }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: const ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
-          ),
-          child: Row(
-            children: List.generate(options.length, (index) {
-              final option = options[index];
-              final label = labels[index];
-              final isSelected = selected == option;
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => onChanged(option),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      color: isSelected ? Colors.white : Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                        color: isSelected ? SunsetColors.sunsetRed : Colors.white.withOpacity(0.7),
-                      ),
+  Widget _buildTransportSelector() {
+    final modes = [
+      {'key': 'air', 'icon': Icons.flight, 'label': 'Air', 'color': SunsetColors.sunsetBlue},
+      {'key': 'land', 'icon': Icons.directions_car, 'label': 'Land', 'color': SunsetColors.sunsetYellow},
+      {'key': 'sea', 'icon': Icons.directions_boat, 'label': 'Sea', 'color': SunsetColors.sunsetPink},
+      {'key': 'mixed', 'icon': Icons.shuffle, 'label': 'Mixed', 'color': SunsetColors.sunsetRed},
+    ];
+
+    return Row(
+      children: modes.map((mode) {
+        final isSelected = _transportMode == mode['key'];
+        return Expanded(
+          child: GestureDetector(
+            onTap: () => setState(() => _transportMode = mode['key'] as String),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? (mode['color'] as Color).withOpacity(0.3)
+                    : Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected
+                      ? (mode['color'] as Color)
+                      : Colors.white.withOpacity(0.2),
+                  width: isSelected ? 2 : 1,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    mode['icon'] as IconData,
+                    color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+                    size: 28,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    mode['label'] as String,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
                     ),
                   ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildBudgetSelector() {
+    final levels = [
+      {'key': 'budget', 'label': 'Budget', 'icon': Icons.wallet, 'color': const Color(0xFF2D6A4F)},
+      {'key': 'moderate', 'label': 'Moderate', 'icon': Icons.account_balance_wallet, 'color': SunsetColors.sunsetYellow},
+      {'key': 'luxury', 'label': 'Luxury', 'icon': Icons.diamond, 'color': SunsetColors.sunsetRed},
+    ];
+
+    return Column(
+      children: [
+        Row(
+          children: levels.map((level) {
+            final isSelected = _budgetLevel == level['key'];
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() => _budgetLevel = level['key'] as String),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? (level['color'] as Color).withOpacity(0.3)
+                        : Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected
+                          ? (level['color'] as Color)
+                          : Colors.white.withOpacity(0.2),
+                      width: isSelected ? 2 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        level['icon'] as IconData,
+                        color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        level['label'] as String,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              );
-            }),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 8),
+        // Visual budget indicator
+        _buildBudgetIndicator(),
+      ],
+    );
+  }
+
+  Widget _buildBudgetIndicator() {
+    final colors = {
+      'budget': const Color(0xFF2D6A4F),
+      'moderate': SunsetColors.sunsetYellow,
+      'luxury': SunsetColors.sunsetRed,
+    };
+    final labels = {
+      'budget': '~\$50/day',
+      'moderate': '~\$150/day',
+      'luxury': '~\$300+/day',
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: colors[_budgetLevel],
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            labels[_budgetLevel] ?? '',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.white.withOpacity(0.6),
+            ),
+          ),
+          const Spacer(),
+          Text(
+            'Est. total: \$${(_estimateBudget(_endDate.difference(_startDate).inDays + 1)).toStringAsFixed(0)}',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.white70,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIntensitySelector() {
+    final levels = [
+      {'key': 'relaxed', 'label': 'Relaxed', 'icon': Icons.coffee, 'color': const Color(0xFF2D6A4F), 'desc': '2-3 activities/day'},
+      {'key': 'balanced', 'label': 'Balanced', 'icon': Icons.balance, 'color': SunsetColors.sunsetYellow, 'desc': '3-5 activities/day'},
+      {'key': 'intense', 'label': 'Intense', 'icon': Icons.bolt, 'color': SunsetColors.sunsetRed, 'desc': '5-8 activities/day'},
+    ];
+
+    return Column(
+      children: [
+        Row(
+          children: levels.map((level) {
+            final isSelected = _intensity == level['key'];
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() => _intensity = level['key'] as String),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? (level['color'] as Color).withOpacity(0.3)
+                        : Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected
+                          ? (level['color'] as Color)
+                          : Colors.white.withOpacity(0.2),
+                      width: isSelected ? 2 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        level['icon'] as IconData,
+                        color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        level['label'] as String,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 8),
+        // Intensity description
+        Text(
+          levels.firstWhere((l) => l['key'] == _intensity)['desc'] as String,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.white.withOpacity(0.5),
           ),
         ),
-      ),
+      ],
     );
   }
 
