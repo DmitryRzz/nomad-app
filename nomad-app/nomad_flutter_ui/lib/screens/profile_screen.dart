@@ -1,5 +1,7 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../theme/sunset_theme.dart';
 import '../providers/auth_provider.dart';
 import 'welcome_screen.dart';
 
@@ -12,167 +14,191 @@ class ProfileScreen extends ConsumerWidget {
     final user = authState.user;
 
     if (user == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Container(
+        decoration: const BoxDecoration(gradient: SunsetGradients.background),
+        child: const Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Center(child: CircularProgressIndicator(color: Colors.white)),
+        ),
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {
-              // TODO: Settings screen
-            },
+    return Container(
+      decoration: const BoxDecoration(gradient: SunsetGradients.background),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const GradientText(
+            text: 'Profile',
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
+            gradient: LinearGradient(
+              colors: [Colors.white, SunsetColors.sunsetYellow],
+            ),
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            children: [
-              // Avatar
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                backgroundImage: user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
-                child: user.avatarUrl == null
-                    ? Text(
-                        (user.name ?? user.email)[0].toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      )
-                    : null,
-              ),
-              const SizedBox(height: 16),
-              // Name
-              Text(
-                user.name ?? 'Traveler',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              // Email
-              Text(
-                user.email,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
-              ),
-              if (!user.emailVerified) ...[
-                const SizedBox(height: 8),
+          centerTitle: true,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                // Avatar with gradient
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  width: 100,
+                  height: 100,
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.warning_amber_rounded, size: 16, color: Colors.orange[700]),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Email not verified',
-                        style: TextStyle(fontSize: 12, color: Colors.orange[700]),
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      colors: [SunsetColors.sunsetRed, SunsetColors.sunsetYellow],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: SunsetColors.sunsetRed.withOpacity(0.3),
+                        blurRadius: 30,
+                        spreadRadius: 5,
                       ),
                     ],
                   ),
+                  child: user.avatarUrl == null
+                      ? Center(
+                          child: Text(
+                            (user.name ?? user.email)[0].toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        )
+                      : ClipOval(
+                          child: Image.network(
+                            user.avatarUrl!,
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                ),
+                const SizedBox(height: 16),
+                // Name
+                Text(
+                  user.name ?? 'Traveler',
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // Email
+                Text(
+                  user.email,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: SunsetColors.textLightMuted,
+                  ),
+                ),
+                if (!user.emailVerified) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: SunsetColors.sunsetYellow.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: SunsetColors.sunsetYellow.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.warning_amber_rounded, size: 16, color: SunsetColors.sunsetYellow),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Email not verified',
+                          style: TextStyle(fontSize: 12, color: SunsetColors.sunsetYellow.withOpacity(0.9)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 24),
+                // Stats in glass cards
+                Row(
+                  children: [
+                    _GlassStatCard(icon: Icons.map, label: 'Routes', value: '12'),
+                    const SizedBox(width: 12),
+                    _GlassStatCard(icon: Icons.bookmark_border, label: 'Saved', value: '48'),
+                    const SizedBox(width: 12),
+                    _GlassStatCard(icon: Icons.language, label: 'Translations', value: '156'),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                // Menu sections
+                _SunsetMenuSection(
+                  title: 'Account',
+                  items: [
+                    _SunsetMenuItem(
+                      icon: Icons.edit_outlined,
+                      title: 'Edit Profile',
+                      onTap: () => _showEditProfile(context, ref, user),
+                    ),
+                    _SunsetMenuItem(
+                      icon: Icons.language_outlined,
+                      title: 'Language',
+                      subtitle: user.nativeLanguage.toUpperCase(),
+                      onTap: () {},
+                    ),
+                    _SunsetMenuItem(
+                      icon: Icons.notifications_outlined,
+                      title: 'Notifications',
+                      onTap: () {},
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _SunsetMenuSection(
+                  title: 'Support',
+                  items: [
+                    _SunsetMenuItem(
+                      icon: Icons.help_outline,
+                      title: 'Help Center',
+                      onTap: () {},
+                    ),
+                    _SunsetMenuItem(
+                      icon: Icons.privacy_tip_outlined,
+                      title: 'Privacy Policy',
+                      onTap: () {},
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+                // Logout
+                OutlinedButton.icon(
+                  onPressed: () => _confirmLogout(context, ref),
+                  icon: const Icon(Icons.logout, color: SunsetColors.sunsetRed),
+                  label: const Text(
+                    'Sign Out',
+                    style: TextStyle(
+                      color: SunsetColors.sunsetRed,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 48),
+                    side: const BorderSide(color: SunsetColors.sunsetRed, width: 1.5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Version
+                const Text(
+                  'NOMAD v1.0.0',
+                  style: TextStyle(fontSize: 12, color: SunsetColors.textLightMuted),
                 ),
               ],
-              const SizedBox(height: 32),
-              // Stats
-              Row(
-                children: [
-                  _StatCard(
-                    icon: Icons.map,
-                    label: 'Routes',
-                    value: '0',
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 12),
-                  _StatCard(
-                    icon: Icons.bookmark_border,
-                    label: 'Saved',
-                    value: '0',
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
-                  const SizedBox(width: 12),
-                  _StatCard(
-                    icon: Icons.language,
-                    label: 'Translations',
-                    value: '0',
-                    color: Theme.of(context).colorScheme.tertiary,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
-              // Menu items
-              _MenuSection(
-                title: 'Account',
-                items: [
-                  _MenuItem(
-                    icon: Icons.edit_outlined,
-                    title: 'Edit Profile',
-                    onTap: () => _showEditProfile(context, ref, user),
-                  ),
-                  _MenuItem(
-                    icon: Icons.language_outlined,
-                    title: 'Language',
-                    subtitle: user.nativeLanguage.toUpperCase(),
-                    onTap: () {},
-                  ),
-                  _MenuItem(
-                    icon: Icons.notifications_outlined,
-                    title: 'Notifications',
-                    onTap: () {},
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _MenuSection(
-                title: 'Support',
-                items: [
-                  _MenuItem(
-                    icon: Icons.help_outline,
-                    title: 'Help Center',
-                    onTap: () {},
-                  ),
-                  _MenuItem(
-                    icon: Icons.privacy_tip_outlined,
-                    title: 'Privacy Policy',
-                    onTap: () {},
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
-              // Logout
-              OutlinedButton.icon(
-                onPressed: () => _confirmLogout(context, ref),
-                icon: const Icon(Icons.logout, color: Colors.red),
-                label: const Text(
-                  'Sign Out',
-                  style: TextStyle(color: Colors.red),
-                ),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 48),
-                  side: const BorderSide(color: Colors.red),
-                ),
-              ),
-              const SizedBox(height: 24),
-              // Version
-              Text(
-                'NOMAD v1.0.0',
-                style: TextStyle(fontSize: 12, color: Colors.grey[400]),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -185,43 +211,56 @@ class ProfileScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 24,
-          right: 24,
-          top: 24,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          gradient: SunsetGradients.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Edit Profile',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 24,
+            right: 24,
+            top: 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Edit Profile',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              TextField(
+                controller: nameController,
+                style: const TextStyle(color: Colors.white),
+                decoration: SunsetStyles.glassInput(hint: 'Name'),
               ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () async {
-                await ref.read(authProvider.notifier).updateProfile(
-                  name: nameController.text.trim(),
-                );
-                if (context.mounted) Navigator.pop(context);
-              },
-              child: const Text('Save'),
-            ),
-            const SizedBox(height: 24),
-          ],
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () async {
+                  await ref.read(authProvider.notifier).updateProfile(
+                    name: nameController.text.trim(),
+                  );
+                  if (context.mounted) Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: SunsetColors.sunsetRed,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w700)),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );
@@ -231,6 +270,7 @@ class ProfileScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Sign Out'),
         content: const Text('Are you sure you want to sign out?'),
         actions: [
@@ -248,7 +288,7 @@ class ProfileScreen extends ConsumerWidget {
                 );
               }
             },
-            child: const Text('Sign Out', style: TextStyle(color: Colors.red)),
+            child: const Text('Sign Out', style: TextStyle(color: SunsetColors.sunsetRed)),
           ),
         ],
       ),
@@ -256,57 +296,63 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-class _StatCard extends StatelessWidget {
+class _GlassStatCard extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  final Color color;
 
-  const _StatCard({
+  const _GlassStatCard({
     required this.icon,
     required this.label,
     required this.value,
-    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: const ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            child: Column(
+              children: [
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withOpacity(0.6),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _MenuSection extends StatelessWidget {
+class _SunsetMenuSection extends StatelessWidget {
   final String title;
-  final List<_MenuItem> items;
+  final List<_SunsetMenuItem> items;
 
-  const _MenuSection({required this.title, required this.items});
+  const _SunsetMenuSection({required this.title, required this.items});
 
   @override
   Widget build(BuildContext context) {
@@ -314,26 +360,38 @@ class _MenuSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          title,
+          title.toUpperCase(),
           style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey[600],
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: Colors.white.withOpacity(0.5),
+            letterSpacing: 1,
           ),
         ),
-        const SizedBox(height: 8),
-        Card(
-          margin: EdgeInsets.zero,
-          child: Column(
-            children: items.asMap().entries.map((entry) {
-              final isLast = entry.key == items.length - 1;
-              return Column(
-                children: [
-                  entry.value,
-                  if (!isLast) const Divider(height: 1, indent: 56),
-                ],
-              );
-            }).toList(),
+        const SizedBox(height: 10),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: const ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withOpacity(0.15)),
+              ),
+              child: Column(
+                children: items.asMap().entries.map((entry) {
+                  final isLast = entry.key == items.length - 1;
+                  return Column(
+                    children: [
+                      entry.value,
+                      if (!isLast)
+                        Divider(height: 1, color: Colors.white.withOpacity(0.1)),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
           ),
         ),
       ],
@@ -341,13 +399,13 @@ class _MenuSection extends StatelessWidget {
   }
 }
 
-class _MenuItem extends StatelessWidget {
+class _SunsetMenuItem extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
   final VoidCallback onTap;
 
-  const _MenuItem({
+  const _SunsetMenuItem({
     required this.icon,
     required this.title,
     this.subtitle,
@@ -357,10 +415,15 @@ class _MenuItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: Colors.grey[600]),
-      title: Text(title),
-      subtitle: subtitle != null ? Text(subtitle!) : null,
-      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+      leading: Icon(icon, color: Colors.white.withOpacity(0.7), size: 20),
+      title: Text(
+        title,
+        style: const TextStyle(color: Colors.white, fontSize: 15),
+      ),
+      subtitle: subtitle != null
+          ? Text(subtitle!, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13))
+          : null,
+      trailing: Icon(Icons.chevron_right, color: Colors.white.withOpacity(0.3), size: 20),
       onTap: onTap,
     );
   }

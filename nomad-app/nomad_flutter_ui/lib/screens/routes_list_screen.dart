@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../theme/sunset_theme.dart';
 import '../models/route.dart';
 import '../providers/route_provider.dart';
 import 'route_detail_screen.dart';
@@ -12,41 +13,65 @@ class RoutesListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final routesAsync = ref.watch(routesProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('NOMAD', style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
-      ),
-      body: routesAsync.when(
-        data: (routes) {
-          if (routes.isEmpty) {
-            return const _EmptyState();
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: routes.length,
-            itemBuilder: (context, index) {
-              return RouteCard(route: routes[index]);
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Text('Error: $error'),
+    return Container(
+      decoration: const BoxDecoration(gradient: SunsetGradients.background),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const GradientText(
+            text: 'My Routes',
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
+            gradient: LinearGradient(
+              colors: [Colors.white, SunsetColors.sunsetYellow],
+            ),
+          ),
+          centerTitle: false,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CreateRouteScreen()),
+                  );
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(Icons.add, color: Colors.white, size: 20),
+                ),
+              ),
+            ),
+          ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const CreateRouteScreen()),
-          );
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('New Route'),
+        body: routesAsync.when(
+          data: (routes) {
+            if (routes.isEmpty) {
+              return const _EmptyState();
+            }
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: routes.length,
+              itemBuilder: (context, index) {
+                return RouteCard(route: routes[index]);
+              },
+            );
+          },
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          ),
+          error: (error, _) => Center(
+            child: Text('Error: $error', style: const TextStyle(color: Colors.white)),
+          ),
+        ),
       ),
     );
   }
@@ -59,10 +84,9 @@ class RouteCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: SunsetStyles.whiteCard,
       child: InkWell(
         onTap: () {
           ref.read(selectedRouteProvider.notifier).state = route;
@@ -71,9 +95,9 @@ class RouteCard extends ConsumerWidget {
             MaterialPageRoute(builder: (_) => const RouteDetailScreen()),
           );
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(24),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -84,8 +108,9 @@ class RouteCard extends ConsumerWidget {
                     child: Text(
                       route.title,
                       style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: SunsetColors.textDark,
                       ),
                     ),
                   ),
@@ -95,34 +120,68 @@ class RouteCard extends ConsumerWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
+                  const Icon(Icons.location_on, size: 16, color: SunsetColors.textMuted),
                   const SizedBox(width: 4),
                   Text(
                     '${route.city}${route.country != null ? ', ${route.country}' : ''}',
-                    style: TextStyle(color: Colors.grey[600]),
+                    style: const TextStyle(color: SunsetColors.textMuted, fontSize: 13),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  const Icon(Icons.schedule, size: 16, color: SunsetColors.textMuted),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${route.estimatedDurationHours?.toStringAsFixed(1) ?? '?'} hours',
+                    style: const TextStyle(color: SunsetColors.textMuted, fontSize: 13),
+                  ),
+                  const SizedBox(width: 16),
+                  const Icon(Icons.place, size: 16, color: SunsetColors.textMuted),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${route.stops.length} stops',
+                    style: const TextStyle(color: SunsetColors.textMuted, fontSize: 13),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(Icons.schedule, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${route.estimatedDurationHours?.toStringAsFixed(1) ?? '?'} hours',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  const SizedBox(width: 16),
-                  Icon(Icons.place, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${route.stops.length} stops',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ],
+              // Tags
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: route.tags?.map((tag) => _TagChip(tag: tag)).toList() ?? [],
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TagChip extends StatelessWidget {
+  final String tag;
+
+  const _TagChip({required this.tag});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [SunsetColors.sunsetRed, SunsetColors.sunsetPink],
+        ),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        tag,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -139,30 +198,30 @@ class _StatusBadge extends StatelessWidget {
     Color color;
     switch (status) {
       case 'active':
-        color = Colors.green;
+        color = SunsetColors.sunsetRed;
         break;
       case 'completed':
-        color = Colors.blue;
+        color = SunsetColors.sunsetBlue;
         break;
       case 'draft':
-        color = Colors.orange;
+        color = SunsetColors.sunsetYellow;
         break;
       default:
-        color = Colors.grey;
+        color = SunsetColors.textMuted;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         status.toUpperCase(),
         style: TextStyle(
           color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -178,20 +237,28 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.map_outlined, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: const Icon(Icons.map_outlined, size: 40, color: Colors.white),
+          ),
+          const SizedBox(height: 20),
+          const Text(
             'No routes yet',
             style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Create your first travel route',
-            style: TextStyle(color: Colors.grey[500]),
+          const Text(
+            'Create your first adventure',
+            style: TextStyle(color: SunsetColors.textLightMuted, fontSize: 14),
           ),
         ],
       ),

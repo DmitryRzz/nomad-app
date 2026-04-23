@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import '../theme/sunset_theme.dart';
 
 class LanguageShieldScreen extends StatefulWidget {
   const LanguageShieldScreen({super.key});
@@ -15,7 +17,7 @@ class LanguageShieldScreen extends StatefulWidget {
 class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   final TextEditingController _textController = TextEditingController();
-  
+
   bool _isRecording = false;
   bool _isTranslating = false;
   String _recognizedText = '';
@@ -23,11 +25,11 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
   String _selectedSourceLang = 'auto';
   String _selectedTargetLang = 'en';
   String _selectedContext = 'general';
-  
+
   final List<String> _contexts = [
     'general', 'restaurant', 'taxi', 'hotel', 'shopping', 'airport'
   ];
-  
+
   final Map<String, String> _languages = {
     'auto': 'Auto Detect',
     'en': 'English',
@@ -63,12 +65,12 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
   Future<void> _startRecording() async {
     final tempDir = await getTemporaryDirectory();
     final path = '${tempDir.path}/translation_${DateTime.now().millisecondsSinceEpoch}.aac';
-    
+
     await _recorder.startRecorder(
       toFile: path,
       codec: Codec.aacADTS,
     );
-    
+
     setState(() {
       _isRecording = true;
       _recognizedText = '';
@@ -79,7 +81,7 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
   Future<void> _stopRecording() async {
     final path = await _recorder.stopRecorder();
     setState(() => _isRecording = false);
-    
+
     if (path != null) {
       await _processAudio(path);
     }
@@ -87,12 +89,12 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
 
   Future<void> _processAudio(String path) async {
     setState(() => _isTranslating = true);
-    
+
     try {
       final file = File(path);
       final bytes = await file.readAsBytes();
       final base64Audio = base64Encode(bytes);
-      
+
       final response = await http.post(
         Uri.parse('http://localhost:3000/ai/transcribe'),
         headers: {'Content-Type': 'application/json'},
@@ -101,7 +103,7 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
           'language': _selectedSourceLang == 'auto' ? null : _selectedSourceLang,
         }),
       );
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -112,7 +114,7 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
         }
       }
     } catch (e) {
-      print('Error processing audio: $e');
+      debugPrint('Error processing audio: $e');
     } finally {
       setState(() => _isTranslating = false);
     }
@@ -120,7 +122,7 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
 
   Future<void> _translateText(String text) async {
     if (text.isEmpty) return;
-    
+
     try {
       final response = await http.post(
         Uri.parse('http://localhost:3000/ai/translate'),
@@ -131,7 +133,7 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
           'context': _selectedContext,
         }),
       );
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -141,7 +143,7 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
         }
       }
     } catch (e) {
-      print('Error translating: $e');
+      debugPrint('Error translating: $e');
     }
   }
 
@@ -154,31 +156,42 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Language Shield'),
-        elevation: 0,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
-      ),
-      body: Column(
-        children: [
-          // Language selectors
-          _buildLanguageSelectors(),
-          
-          // Context selector
-          _buildContextSelector(),
-          
-          const Divider(),
-          
-          // Main content area
-          Expanded(
-            child: _buildTranslationArea(),
+    return Container(
+      decoration: const BoxDecoration(gradient: SunsetGradients.background),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const GradientText(
+            text: 'Language Shield',
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
+            gradient: LinearGradient(
+              colors: [Colors.white, SunsetColors.sunsetYellow],
+            ),
           ),
-          
-          // Input area
-          _buildInputArea(),
-        ],
+          centerTitle: true,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+        ),
+        body: Column(
+          children: [
+            // Language selectors
+            _buildLanguageSelectors(),
+
+            // Context selector
+            _buildContextSelector(),
+
+            const Divider(color: Colors.white24),
+
+            // Main content area
+            Expanded(
+              child: _buildTranslationArea(),
+            ),
+
+            // Input area
+            _buildInputArea(),
+          ],
+        ),
       ),
     );
   }
@@ -197,10 +210,15 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Icon(
-              Icons.arrow_forward,
-              color: Theme.of(context).colorScheme.primary,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.swap_horiz, color: Colors.white),
             ),
           ),
           Expanded(
@@ -222,38 +240,39 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
     required Function(String?) onChanged,
     required bool includeAuto,
   }) {
-    final entries = includeAuto 
-        ? _languages.entries 
+    final entries = includeAuto
+        ? _languages.entries
         : _languages.entries.where((e) => e.key != 'auto');
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: const ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withOpacity(0.2)),
           ),
-        ),
-        const SizedBox(height: 4),
-        DropdownButtonFormField<String>(
-          value: value,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value,
+              isDense: true,
+              icon: const Icon(Icons.arrow_drop_down, color: Colors.white, size: 20),
+              dropdownColor: const Color(0xFF2D2D44),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              items: entries.map((entry) {
+                return DropdownMenuItem(
+                  value: entry.key,
+                  child: Text(entry.value, style: const TextStyle(color: Colors.white)),
+                );
+              }).toList(),
+              onChanged: onChanged,
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
-          items: entries.map((entry) {
-            return DropdownMenuItem(
-              value: entry.key,
-              child: Text(entry.value),
-            );
-          }).toList(),
-          onChanged: onChanged,
         ),
-      ],
+      ),
     );
   }
 
@@ -265,8 +284,20 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
         children: _contexts.map((context) {
           final isSelected = _selectedContext == context;
           return ChoiceChip(
-            label: Text(context.toUpperCase()),
+            label: Text(
+              context.toUpperCase(),
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
             selected: isSelected,
+            selectedColor: SunsetColors.sunsetRed,
+            backgroundColor: Colors.white.withOpacity(0.1),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(color: Colors.white.withOpacity(0.2)),
+            ),
             onSelected: (selected) {
               if (selected) {
                 setState(() => _selectedContext = context);
@@ -283,7 +314,6 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Recognized text
           if (_recognizedText.isNotEmpty) ...[
             _buildTextCard(
               label: 'Recognized',
@@ -292,8 +322,6 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
             ),
             const SizedBox(height: 16),
           ],
-          
-          // Translated text
           if (_translatedText.isNotEmpty) ...[
             _buildTextCard(
               label: 'Translation',
@@ -302,32 +330,34 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
               isHighlighted: true,
             ),
           ],
-          
           if (_isTranslating)
             const Center(
               child: Padding(
                 padding: EdgeInsets.all(32),
-                child: CircularProgressIndicator(),
+                child: CircularProgressIndicator(color: Colors.white),
               ),
             ),
-          
           if (_recognizedText.isEmpty && _translatedText.isEmpty && !_isTranslating)
             Expanded(
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.translate,
-                      size: 64,
-                      color: Colors.grey[300],
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: const Icon(Icons.translate, size: 40, color: Colors.white),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
+                    const SizedBox(height: 20),
+                    const Text(
                       'Speak or type to translate',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.grey[500],
+                        color: SunsetColors.textLightMuted,
                       ),
                     ),
                   ],
@@ -345,43 +375,61 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
     required IconData icon,
     bool isHighlighted = false,
   }) {
-    return Card(
-      color: isHighlighted ? Theme.of(context).colorScheme.primary.withOpacity(0.1) : null,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[600],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: const ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isHighlighted
+                ? Colors.white.withOpacity(0.2)
+                : Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isHighlighted
+                  ? SunsetColors.sunsetRed.withOpacity(0.5)
+                  : Colors.white.withOpacity(0.2),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(icon, size: 16, color: Colors.white.withOpacity(0.6)),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white.withOpacity(0.6),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              text,
-              style: const TextStyle(fontSize: 18),
-            ),
-            if (isHighlighted)
-              Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  icon: const Icon(Icons.volume_up),
-                  onPressed: () {
-                    // TODO: Play TTS
-                  },
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                text,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: isHighlighted ? Colors.white : Colors.white.withOpacity(0.9),
+                  fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
-          ],
+              if (isHighlighted)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    icon: const Icon(Icons.volume_up, color: Colors.white70),
+                    onPressed: () {
+                      // TODO: Play TTS
+                    },
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -391,50 +439,53 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [
+            Colors.black.withOpacity(0.3),
+            Colors.transparent,
+          ],
         ),
       ),
       child: SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Text input
             TextField(
               controller: _textController,
-              decoration: InputDecoration(
-                hintText: 'Type text to translate...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              style: const TextStyle(color: Colors.white),
+              decoration: SunsetStyles.glassInput(
+                hint: 'Type something...',
+              ).copyWith(
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.send),
+                  icon: const Icon(Icons.send, color: Colors.white),
                   onPressed: _handleTextSubmit,
                 ),
               ),
               onSubmitted: (_) => _handleTextSubmit(),
             ),
             const SizedBox(height: 16),
-            
-            // Voice button
             GestureDetector(
               onTapDown: (_) => _startRecording(),
               onTapUp: (_) => _stopRecording(),
               onTapCancel: () => _stopRecording(),
               child: Container(
-                width: 80,
-                height: 80,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _isRecording 
-                      ? Colors.red 
-                      : Theme.of(context).colorScheme.primary,
+                  gradient: _isRecording
+                      ? null
+                      : const LinearGradient(
+                          colors: [SunsetColors.sunsetRed, SunsetColors.sunsetPink],
+                        ),
+                  color: _isRecording ? Colors.red : null,
                   boxShadow: [
                     BoxShadow(
-                      color: (_isRecording ? Colors.red : Theme.of(context).colorScheme.primary)
-                          .withOpacity(0.3),
-                      blurRadius: 20,
+                      color: (_isRecording ? Colors.red : SunsetColors.sunsetRed)
+                          .withOpacity(0.4),
+                      blurRadius: 30,
                       spreadRadius: 5,
                     ),
                   ],
@@ -442,7 +493,7 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
                 child: Icon(
                   _isRecording ? Icons.mic : Icons.mic_none,
                   color: Colors.white,
-                  size: 36,
+                  size: 28,
                 ),
               ),
             ),
@@ -450,7 +501,7 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
             Text(
               _isRecording ? 'Listening...' : 'Hold to speak',
               style: TextStyle(
-                color: Colors.grey[600],
+                color: Colors.white.withOpacity(0.6),
                 fontSize: 14,
               ),
             ),

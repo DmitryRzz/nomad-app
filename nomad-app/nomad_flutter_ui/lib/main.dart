@@ -1,6 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'theme/sunset_theme.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/routes_list_screen.dart';
 import 'screens/smart_compass_screen.dart';
@@ -44,39 +46,62 @@ class NomadApp extends ConsumerWidget {
       title: 'NOMAD',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2E7D32),
-          brightness: Brightness.light,
-        ),
+        brightness: Brightness.light,
         useMaterial3: true,
+        fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
+        scaffoldBackgroundColor: Colors.transparent,
         appBarTheme: const AppBarTheme(
           centerTitle: true,
           elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: SunsetColors.textLight,
+          titleTextStyle: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: SunsetColors.textLight,
+          ),
         ),
         cardTheme: CardTheme(
-          elevation: 2,
+          elevation: 0,
+          color: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(24),
           ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            backgroundColor: SunsetColors.textLight,
+            foregroundColor: SunsetColors.sunsetRed,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2E7D32),
-          brightness: Brightness.dark,
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: SunsetColors.glassBg,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: SunsetColors.glassBorder),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: SunsetColors.glassBorder),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: SunsetColors.textLight),
+          ),
+          hintStyle: const TextStyle(color: SunsetColors.textLightMuted),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
-        useMaterial3: true,
       ),
-      themeMode: ThemeMode.system,
       home: const AuthGate(),
     );
   }
@@ -140,47 +165,83 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          if (index == 4) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
-            );
-            return;
-          }
-          setState(() => _currentIndex = index);
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.map_outlined),
-            selectedIcon: Icon(Icons.map),
-            label: 'Routes',
+    return Container(
+      decoration: const BoxDecoration(gradient: SunsetGradients.background),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: _screens[_currentIndex],
+        bottomNavigationBar: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.explore_outlined),
-            selectedIcon: Icon(Icons.explore),
-            label: 'Compass',
+          child: BackdropFilter(
+            filter: const ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(
+              decoration: SunsetStyles.glassNav,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildNavItem(0, Icons.map_outlined, Icons.map, 'Routes'),
+                      _buildNavItem(1, Icons.explore_outlined, Icons.explore, 'Compass'),
+                      _buildNavItem(2, Icons.translate_outlined, Icons.translate, 'Translate'),
+                      _buildNavItem(3, Icons.person_outline, Icons.person, 'Profile'),
+                      _buildNavItem(4, Icons.workspace_premium_outlined, Icons.workspace_premium, 'Pro'),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.translate_outlined),
-            selectedIcon: Icon(Icons.translate),
-            label: 'Translate',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.workspace_premium_outlined),
-            selectedIcon: Icon(Icons.workspace_premium),
-            label: 'Pro',
-          ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData icon, IconData activeIcon, String label) {
+    final isActive = _currentIndex == index;
+    return GestureDetector(
+      onTap: () {
+        if (index == 4) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+          );
+          return;
+        }
+        setState(() => _currentIndex = index);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: isActive ? Colors.white.withOpacity(0.2) : Colors.transparent,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            isActive
+                ? ShaderMask(
+                    shaderCallback: (bounds) => SunsetGradients.activeNav.createShader(
+                      Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                    ),
+                    child: Icon(activeIcon, size: 22, color: Colors.white),
+                  )
+                : Icon(icon, size: 22, color: Colors.black.withOpacity(0.4)),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                color: isActive ? SunsetColors.sunsetRed : Colors.black.withOpacity(0.4),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
