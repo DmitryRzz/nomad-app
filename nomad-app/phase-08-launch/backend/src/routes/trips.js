@@ -1,5 +1,12 @@
 const { v4: uuidv4 } = require('uuid');
 
+// Multi-AI provider configuration
+const AI_PROVIDERS = [
+  { name: 'openai', priority: 1, timeout: 30000 },
+  { name: 'groq', priority: 2, timeout: 20000 },
+  { name: 'deepseek', priority: 3, timeout: 25000 },
+];
+
 async function tripRoutes(fastify, options) {
   const { pg, jwt, redis } = fastify;
 
@@ -17,7 +24,160 @@ async function tripRoutes(fastify, options) {
     }
   });
 
-  // Generate AI trip
+  // Generate AI trip with streaming (SSE)
+  fastify.get('/generate-stream', async (request, reply) => {
+    const userId = request.user.userId;
+    const {
+      destination,
+      country,
+      start_date,
+      end_date,
+      budget_level,
+      intensity,
+      transport_mode,
+      interests,
+      cuisines,
+      wake_up_time,
+      sleep_time,
+      travelers_count,
+      special_requirements,
+    } = request.query;
+
+    // Set up SSE headers
+    reply.raw.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    });
+
+    const sendEvent = (event, data) => {
+      reply.raw.write(`event: ${event}\n`);
+      reply.raw.write(`data: ${JSON.stringify(data)}\n\n`);
+    };
+
+    try {
+      // Create trip
+      const tripResult = await pg.query(`
+        INSERT INTO trips (
+          user_id, title, description, destination, country,
+          start_date, end_date, status, budget_level, intensity,
+          transport_mode, interests, cuisines, wake_up_time, sleep_time,
+          travelers_count, special_requirements, generation_progress
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+        RETURNING *
+      `, [
+        userId,
+        `${destination} Adventure`,
+        `AI-generated ${intensity} trip to ${destination}`,
+        destination,
+        country || null,
+        start_date,
+        end_date,
+        'generating',
+        budget_level || 'moderate',
+        intensity || 'balanced',
+        transport_mode || 'mixed',
+        JSON.stringify(interests ? interests.split(',') : []),
+        JSON.stringify(cuisines ? cuisines.split(',') : []),
+        wake_up_time,
+        sleep_time,
+        parseInt(travelers_count) || 1,
+        special_requirements,
+        0,
+      ]);
+
+      const trip = tripResult.rows[0];
+      const days = Math.ceil((new Date(end_date) - new Date(start_date)) / (1000 * 60 * 60 * 24)) + 1;
+
+      sendEvent('started', { tripId: trip.id, totalDays: days });
+
+      // Generate days with streaming progress
+      const tripDays = [];
+      for (let i = 0; i < days; i++) {
+        const progress = Math.round(((i + 1) / days) * 100);
+        
+        // Update progress in DB
+        await pg.query(`
+          UPDATE trips SET generation_progress = $1 WHERE id = $2
+        `, [progress, trip.id]);
+
+        const date = new Date(start_date);
+        date.setDate(date.getDate() + i);
+
+        sendEvent('progress', { 
+          day: i + 1, 
+          progress,
+          message: `Generating day ${i + 1} of ${days}...`,
+        });
+
+        // Try AI generation with fallback
+        const dayData = await generateDayWithFallback({
+          dayIndex: i,
+          totalDays: days,
+          destination,
+          budgetLevel: budget_level,
+          intensity,
+          transportMode: transport_mode,
+          interests: interests ? interests.split(',') : [],
+          fastify,
+        });
+
+        const dayResult = await pg.query(`
+          INSERT INTO trip_days (trip_id, day_number, date, theme)
+          VALUES ($1, $2, $3, $4)
+          RETURNING *
+        `, [
+          trip.id,
+          i + 1,
+          date.toISOString().split('T')[0],
+          dayData.theme,
+        ]);
+
+        const day = dayResult.rows[0];
+
+        // Insert activities
+        for (const activity of dayData.activities) {
+          await pg.query(`
+            INSERT INTO trip_activities (
+              trip_day_id, trip_id, title, description, category,
+              duration_minutes, cost, currency, start_time
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          `, [
+            day.id,
+            trip.id,
+            activity.title,
+            activity.description,
+            activity.category,
+            activity.duration,
+            activity.cost,
+            'USD',
+            activity.startTime,
+          ]);
+        }
+
+        tripDays.push({ ...day, activities: dayData.activities });
+
+        // Small delay for streaming effect
+        await new Promise(r => setTimeout(r, 300));
+      }
+
+      // Update trip status
+      await pg.query(`
+        UPDATE trips SET status = 'active', generation_progress = 100, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+      `, [trip.id]);
+
+      const fullTrip = await getFullTrip(pg, trip.id);
+
+      sendEvent('completed', { trip: fullTrip });
+      reply.raw.end();
+
+    } catch (error) {
+      fastify.log.error(error);
+      sendEvent('error', { message: error.message });
+      reply.raw.end();
+    }
+  });
   fastify.post('/generate', async (request, reply) => {
     const userId = request.user.userId;
     const {
@@ -296,6 +456,70 @@ async function tripRoutes(fastify, options) {
       return reply.status(500).send({ error: error.message });
     }
   });
+}
+
+// Multi-AI fallback function
+async function generateDayWithFallback({ dayIndex, totalDays, destination, budgetLevel, intensity, transportMode, interests, fastify }) {
+  const providers = [...AI_PROVIDERS].sort((a, b) => a.priority - b.priority);
+  
+  for (const provider of providers) {
+    try {
+      fastify.log.info(`Trying AI provider: ${provider.name} for day ${dayIndex + 1}`);
+      
+      // In real implementation, call actual AI API here
+      // For now, simulate with timeout
+      const result = await Promise.race([
+        simulateAIGeneration({ dayIndex, totalDays, destination, budgetLevel, intensity, transportMode, interests }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error(`Timeout: ${provider.name}`)), provider.timeout)
+        ),
+      ]);
+      
+      fastify.log.info(`AI provider ${provider.name} succeeded for day ${dayIndex + 1}`);
+      return result;
+      
+    } catch (error) {
+      fastify.log.warn(`AI provider ${provider.name} failed: ${error.message}`);
+      // Continue to next provider
+    }
+  }
+  
+  // All providers failed, use mock fallback
+  fastify.log.error('All AI providers failed, using mock fallback');
+  return {
+    theme: getDayTheme(dayIndex, totalDays),
+    activities: generateActivities(dayIndex, destination, budgetLevel),
+  };
+}
+
+// Simulate AI generation (mock)
+async function simulateAIGeneration({ dayIndex, totalDays, destination, budgetLevel, intensity, transportMode, interests }) {
+  // Simulate API latency
+  await new Promise(r => setTimeout(r, 500 + Math.random() * 1000));
+  
+  const baseCost = budgetLevel === 'budget' ? 15 : budgetLevel === 'luxury' ? 60 : 30;
+  const baseHour = 9;
+  const activities = [];
+  
+  // Generate activities based on intensity
+  const activityCount = intensity === 'intense' ? 6 : intensity === 'relaxed' ? 3 : 4;
+  
+  for (let i = 0; i < activityCount; i++) {
+    const hourOffset = i * 3;
+    activities.push({
+      title: `${destination} Activity ${i + 1}`,
+      description: `Explore ${destination} - ${interests[i % interests.length] || 'sightseeing'}`,
+      category: ['sightseeing', 'food', 'rest', 'shopping'][i % 4],
+      duration: 90 + (i * 30),
+      cost: baseCost * (1 + i * 0.3),
+      startTime: `${baseHour + hourOffset}:00`,
+    });
+  }
+  
+  return {
+    theme: getDayTheme(dayIndex, totalDays),
+    activities,
+  };
 }
 
 // Helper functions
