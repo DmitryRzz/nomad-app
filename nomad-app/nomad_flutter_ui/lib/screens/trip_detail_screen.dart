@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../theme/sunset_theme.dart';
 import '../models/trip.dart';
+import 'trip_stats_screen.dart';
+import 'cost_breakdown_screen.dart';
 
 class TripDetailScreen extends StatefulWidget {
   final Trip trip;
@@ -94,9 +96,32 @@ class _TripDetailScreenState extends State<TripDetailScreen>
               ],
             ),
           ),
+          // Stats button
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => TripStatsScreen(trip: _trip),
+                ),
+              );
+            },
+            icon: const Icon(Icons.bar_chart, color: Colors.white),
+          ),
           // Cost breakdown toggle
           GestureDetector(
-            onTap: () => setState(() => _showCostBreakdown = !_showCostBreakdown),
+            onTap: () {
+              final breakdown = _calculateCostBreakdown();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CostBreakdownScreen(
+                    trip: _trip,
+                    breakdown: breakdown,
+                  ),
+                ),
+              );
+            },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
@@ -725,6 +750,51 @@ class _TripDetailScreenState extends State<TripDetailScreen>
       default:
         return Icons.place;
     }
+  }
+
+  CostBreakdown _calculateCostBreakdown() {
+    double accommodation = 0;
+    double food = 0;
+    double transport = 0;
+    double activities = 0;
+    double shopping = 0;
+    double other = 0;
+
+    for (final day in _trip.days) {
+      for (final activity in day.activities) {
+        if (activity.skipped || activity.cost == null) continue;
+        switch (activity.category.toLowerCase()) {
+          case 'rest':
+            accommodation += activity.cost!;
+            break;
+          case 'food':
+            food += activity.cost!;
+            break;
+          case 'transport':
+            transport += activity.cost!;
+            break;
+          case 'sightseeing':
+          case 'entertainment':
+            activities += activity.cost!;
+            break;
+          case 'shopping':
+            shopping += activity.cost!;
+            break;
+          default:
+            other += activity.cost!;
+        }
+      }
+    }
+
+    return CostBreakdown(
+      accommodation: accommodation,
+      food: food,
+      transport: transport,
+      activities: activities,
+      shopping: shopping,
+      other: other,
+      currency: 'USD',
+    );
   }
 }
 
