@@ -5,6 +5,7 @@ import '../models/route.dart';
 import '../providers/route_provider.dart';
 import 'route_detail_screen.dart';
 import 'create_route_screen.dart';
+import 'ai_trip_generation_screen.dart';
 
 class RoutesListScreen extends ConsumerWidget {
   const RoutesListScreen({super.key});
@@ -30,6 +31,43 @@ class RoutesListScreen extends ConsumerWidget {
           backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
           actions: [
+            // AI Generate button
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AITripGenerationScreen()),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [SunsetColors.sunsetRed, SunsetColors.sunsetYellow],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.auto_awesome, color: Colors.white, size: 18),
+                      SizedBox(width: 6),
+                      Text(
+                        'AI Trip',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Create manual route
             Padding(
               padding: const EdgeInsets.only(right: 16),
               child: GestureDetector(

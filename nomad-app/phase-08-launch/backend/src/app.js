@@ -32,6 +32,7 @@ app.register(require('./routes/poi'), { prefix: '/poi' });
 app.register(require('./routes/bookings'), { prefix: '/bookings' });
 app.register(require('./routes/payments'), { prefix: '/payments' });
 app.register(require('./routes/push'), { prefix: '/push' });
+app.register(require('./routes/trips'), { prefix: '/trips' });
 
 // Error handler
 app.setErrorHandler((error, request, reply) => {

@@ -9,6 +9,7 @@ import 'screens/smart_compass_screen.dart';
 import 'screens/language_shield_screen.dart';
 import 'screens/subscription_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/ai_trip_generation_screen.dart';
 import 'providers/auth_provider.dart';
 import 'services/local_storage_service.dart';
 import 'services/push_notification_service.dart';
