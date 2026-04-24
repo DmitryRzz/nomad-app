@@ -357,11 +357,19 @@
                 <h2 style="font-size: 28px; font-weight: 700; color: white; margin-bottom: 24px;">New Route</h2>
                 <div class="glass-card" style="margin-bottom: 20px;">
                     <label style="color: rgba(255,255,255,0.8); font-size: 14px; display: block; margin-bottom: 8px;">Destination</label>
-                    <input type="text" placeholder="e.g. Paris, Tokyo, Bali" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; font-size: 16px;">
+                    <input type="text" id="route-destination" placeholder="e.g. Paris, Tokyo, Bali" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; font-size: 16px;">
                 </div>
                 <div class="glass-card" style="margin-bottom: 20px;">
                     <label style="color: rgba(255,255,255,0.8); font-size: 14px; display: block; margin-bottom: 8px;">Duration (days)</label>
-                    <input type="number" placeholder="3" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; font-size: 16px;">
+                    <input type="number" id="route-duration" placeholder="3" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; font-size: 16px;">
+                </div>
+                <div class="glass-card" style="margin-bottom: 20px;">
+                    <label style="color: rgba(255,255,255,0.8); font-size: 14px; display: block; margin-bottom: 8px;">Budget</label>
+                    <select id="route-budget" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; font-size: 16px;">
+                        <option value="budget" style="color: #333;">Budget (~$50/day)</option>
+                        <option value="moderate" style="color: #333;">Moderate (~$150/day)</option>
+                        <option value="luxury" style="color: #333;">Luxury (~$300+/day)</option>
+                    </select>
                 </div>
                 <button class="btn-primary" onclick="showAIGenerate()">Generate AI Route ✨</button>
                 <button onclick="navigate('routes')" style="background: transparent; color: white; border: none; padding: 16px; width: 100%; margin-top: 12px; font-size: 16px; cursor: pointer;">Cancel</button>
@@ -480,8 +488,8 @@
                     <div class="glass-card" style="margin-bottom: 20px;">
                         <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
                         <h3 style="color: white; font-size: 20px; font-weight: 700; margin-bottom: 8px;">Route Ready!</h3>
-                        <p style="color: rgba(255,255,255,0.8); font-size: 14px; margin-bottom: 20px;">Your personalized 3-day Tokyo adventure is ready</p>
-                        <button class="btn-primary" onclick="navigate('routes')">View Route</button>
+                        <p id="ai-route-summary" style="color: rgba(255,255,255,0.8); font-size: 14px; margin-bottom: 20px;">Your personalized adventure is ready</p>
+                        <button class="btn-primary" onclick="navigate('routes')">View My Routes</button>
                     </div>
                 </div>
                 <button onclick="navigate('routes')" style="background: transparent; color: white; border: none; padding: 16px; font-size: 16px; cursor: pointer; margin-top: auto;">Cancel</button>
@@ -766,13 +774,17 @@
         }
 
         function showAIGenerate() {
+            const destination = document.getElementById('route-destination').value.trim() || 'Paris';
+            const duration = parseInt(document.getElementById('route-duration').value) || 3;
+            const budget = document.getElementById('route-budget').value;
+            
             navigate('ai-generate');
-            simulateAIGeneration();
+            simulateAIGeneration(destination, duration, budget);
         }
 
-        function simulateAIGeneration() {
+        function simulateAIGeneration(destination, duration, budget) {
             const steps = [
-                { text: 'Analyzing destination...', delay: 800 },
+                { text: `Analyzing ${destination}...`, delay: 800 },
                 { text: 'Finding top attractions...', delay: 1200 },
                 { text: 'Optimizing route...', delay: 1500 },
                 { text: 'Adding local secrets...', delay: 1000 },
@@ -806,8 +818,38 @@
                 setTimeout(() => {
                     document.getElementById('ai-complete').style.transition = 'opacity 0.5s';
                     document.getElementById('ai-complete').style.opacity = '1';
+                    // Auto-redirect after showing completion
+                    setTimeout(() => {
+                        showGeneratedRouteResult(destination, duration, budget);
+                    }, 2000);
                 }, 50);
             }, totalDelay + 500);
+        }
+
+        function showGeneratedRouteResult(destination, duration, budget) {
+            // Update summary text
+            const summary = document.getElementById('ai-route-summary');
+            if (summary) {
+                summary.textContent = `Your ${duration}-day ${destination} adventure (${budget} budget) is ready`;
+            }
+            const newRoute = {
+                id: 'ai-' + Date.now(),
+                title: `${duration}-Day ${destination} Adventure`,
+                city: destination,
+                country: 'Unknown',
+                status: 'active',
+                duration: duration * 24 + 'h',
+                tags: ['ai-generated', budget],
+                image: '🌍',
+                stops: duration
+            };
+            
+            // Add to routes list
+            routes.unshift(newRoute);
+            renderRoutes();
+            
+            // Show detail
+            showRouteDetail(newRoute.id);
         }
 
         function handleRegister() {
