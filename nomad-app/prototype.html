@@ -197,11 +197,58 @@
             overflow: hidden;
             margin-top: 12px;
         }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ff6b6b, #feca57);
-            border-radius: 4px;
-            transition: width 0.3s;
+        .day-tab {
+            padding: 12px 16px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            min-width: 80px;
+        }
+        .day-tab.active {
+            background: white;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        .day-tab.active .day-number {
+            color: #ff6b6b;
+        }
+        .day-number {
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+        }
+        .day-date {
+            font-size: 11px;
+            color: rgba(255,255,255,0.7);
+            margin-top: 2px;
+        }
+        .day-tab.active .day-date {
+            color: #636E72;
+        }
+        .plan-card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .plan-card.popular {
+            border-color: #ff6b6b;
+            position: relative;
+        }
+        .popular-badge {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff6b6b, #ff9ff3);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
         }
     </style>
 </head>
@@ -241,6 +288,10 @@
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></svg>
                     <span>Compass</span>
                 </div>
+                <div class="nav-item" onclick="navigate('subscription')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span>Pro</span>
+                </div>
                 <div class="nav-item" onclick="navigate('profile')">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     <span>Profile</span>
@@ -273,6 +324,7 @@
                                 <div class="progress-fill" style="width: 0%"></div>
                             </div>
                         </div>
+                        <button class="btn-primary" style="margin-top: 20px;" onclick="navigate('route-days')">View Day-by-Day →</button>
                     </div>
                 </div>
             </div>
@@ -290,7 +342,7 @@
                     <label style="color: rgba(255,255,255,0.8); font-size: 14px; display: block; margin-bottom: 8px;">Duration (days)</label>
                     <input type="number" placeholder="3" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; font-size: 16px;">
                 </div>
-                <button class="btn-primary" onclick="navigate('routes')">Generate AI Route ✨</button>
+                <button class="btn-primary" onclick="showAIGenerate()">Generate AI Route ✨</button>
                 <button onclick="navigate('routes')" style="background: transparent; color: white; border: none; padding: 16px; width: 100%; margin-top: 12px; font-size: 16px; cursor: pointer;">Cancel</button>
             </div>
         </div>
@@ -327,6 +379,10 @@
                 <div class="nav-item active" onclick="navigate('compass')">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></svg>
                     <span>Compass</span>
+                </div>
+                <div class="nav-item" onclick="navigate('subscription')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span>Pro</span>
                 </div>
                 <div class="nav-item" onclick="navigate('profile')">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -368,10 +424,93 @@
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></svg>
                     <span>Compass</span>
                 </div>
+                <div class="nav-item" onclick="navigate('subscription')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span>Pro</span>
+                </div>
                 <div class="nav-item active" onclick="navigate('profile')">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     <span>Profile</span>
                 </div>
+            </div>
+        </div>
+
+        <!-- Day-by-Day Route View -->
+        <div class="screen" id="route-days">
+            <div style="background: #f8f9fa; min-height: 100vh;">
+                <div class="sunset-bg" style="padding: 50px 20px 24px;">
+                    <button onclick="navigate('routes')" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px; border-radius: 12px; margin-bottom: 16px; cursor: pointer;">← Back</button>
+                    <h1 id="days-route-title" style="font-size: 26px; font-weight: 700; color: white; margin-bottom: 4px;">Route Title</h1>
+                    <p id="days-route-subtitle" style="color: rgba(255,255,255,0.8); font-size: 14px; margin-bottom: 12px;">City • Duration</p>
+                    <div id="days-tags" style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px;"></div>
+                    <div id="day-tabs" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;"></div>
+                </div>
+                <div style="padding: 20px;" id="day-content"></div>
+            </div>
+        </div>
+
+        <!-- AI Generate Screen -->
+        <div class="screen" id="ai-generate">
+            <div class="sunset-bg" style="padding: 60px 20px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <h2 style="font-size: 28px; font-weight: 700; color: white; margin-bottom: 8px;">AI Magic ✨</h2>
+                <p style="color: rgba(255,255,255,0.8); margin-bottom: 40px;">Creating your perfect itinerary</p>
+                <div id="ai-steps" style="width: 100%; max-width: 340px; text-align: left;"></div>
+                <div id="ai-complete" style="display: none; margin-top: 40px; width: 100%; max-width: 340px;">
+                    <div class="glass-card" style="margin-bottom: 20px;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+                        <h3 style="color: white; font-size: 20px; font-weight: 700; margin-bottom: 8px;">Route Ready!</h3>
+                        <p style="color: rgba(255,255,255,0.8); font-size: 14px; margin-bottom: 20px;">Your personalized 3-day Tokyo adventure is ready</p>
+                        <button class="btn-primary" onclick="navigate('routes')">View Route</button>
+                    </div>
+                </div>
+                <button onclick="navigate('routes')" style="background: transparent; color: white; border: none; padding: 16px; font-size: 16px; cursor: pointer; margin-top: auto;">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Subscription Screen -->
+        <div class="screen" id="subscription">
+            <div class="sunset-bg" style="padding: 60px 20px;">
+                <h2 style="font-size: 28px; font-weight: 700; color: white; margin-bottom: 8px; text-align: center;">Go Pro 🚀</h2>
+                <p style="color: rgba(255,255,255,0.8); text-align: center; margin-bottom: 32px;">Unlock unlimited AI routes</p>
+                
+                <div class="plan-card">
+                    <h3 style="font-size: 18px; font-weight: 700; color: #2D3436; margin-bottom: 4px;">Free</h3>
+                    <p style="font-size: 24px; font-weight: 800; color: #2D3436; margin-bottom: 16px;">$0</p>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; color: #636E72;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#2D6A4F"><polyline points="20 6 9 17 4 12"/></svg>
+                        3 AI routes per month
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; color: #636E72;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#2D6A4F"><polyline points="20 6 9 17 4 12"/></svg>
+                        Basic offline maps
+                    </div>
+                    <button style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #ddd; background: white; color: #636E72; font-weight: 600; margin-top: 12px; cursor: pointer;">Current Plan</button>
+                </div>
+
+                <div class="plan-card popular">
+                    <div class="popular-badge">POPULAR</div>
+                    <h3 style="font-size: 18px; font-weight: 700; color: #2D3436; margin-bottom: 4px;">Pro</h3>
+                    <p style="font-size: 24px; font-weight: 800; color: #ff6b6b; margin-bottom: 16px;">$9.99<span style="font-size: 14px; color: #636E72; font-weight: 400;">/month</span></p>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; color: #636E72;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#2D6A4F"><polyline points="20 6 9 17 4 12"/></svg>
+                        Unlimited AI routes
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; color: #636E72;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#2D6A4F"><polyline points="20 6 9 17 4 12"/></svg>
+                        Advanced offline sync
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; color: #636E72;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#2D6A4F"><polyline points="20 6 9 17 4 12"/></svg>
+                        Real-time translation
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; color: #636E72;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#2D6A4F"><polyline points="20 6 9 17 4 12"/></svg>
+                        Priority support
+                    </div>
+                    <button class="btn-primary" style="margin-top: 12px;" onclick="alert('Demo: Subscription flow')">Upgrade to Pro</button>
+                </div>
+                
+                <button onclick="navigate('routes')" style="background: transparent; color: white; border: none; padding: 16px; width: 100%; margin-top: 16px; font-size: 16px; cursor: pointer;">Maybe Later</button>
             </div>
         </div>
     </div>
@@ -462,9 +601,21 @@
             architecture: 'tag-culture'
         };
 
+        function initScreenFromURL() {
+            const hash = window.location.hash.replace('#', '');
+            const urlParams = new URLSearchParams(window.location.search);
+            const screenId = urlParams.get('screen') || hash;
+            
+            if (screenId && document.getElementById(screenId)) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(screenId).classList.add('active');
+            }
+        }
+
         function navigate(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
+            const target = document.getElementById(screenId);
+            if (target) target.classList.add('active');
             window.scrollTo(0, 0);
         }
 
@@ -494,27 +645,159 @@
             const route = routes.find(r => r.id === routeId);
             if (!route) return;
 
-            document.getElementById('detail-title').textContent = route.title;
-            document.getElementById('detail-tags').innerHTML = route.tags.map(tag => 
+            // Generate day-by-day breakdown (simulate AI)
+            const days = [];
+            const stopsPerDay = Math.ceil(route.stops.length / Math.max(1, Math.floor(route.duration / 24)));
+            let currentDay = 1;
+            let dayStops = [];
+            
+            route.stops.forEach((stop, index) => {
+                dayStops.push(stop);
+                if (dayStops.length >= stopsPerDay || index === route.stops.length - 1) {
+                    days.push({
+                        day: currentDay,
+                        stops: [...dayStops],
+                        date: new Date(Date.now() + (currentDay - 1) * 86400000).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                    });
+                    currentDay++;
+                    dayStops = [];
+                }
+            });
+
+            // Show route detail with day tabs
+            document.getElementById('days-route-title').textContent = route.title;
+            document.getElementById('days-route-subtitle').textContent = `${route.city}, ${route.country} • ${Math.ceil(route.duration / 24)} days`;
+            document.getElementById('days-tags').innerHTML = route.tags.map(tag => 
                 `<span class="tag ${tagColors[tag] || 'tag-culture'}">${tag}</span>`
             ).join('');
-
-            const stopsContainer = document.getElementById('stops-list');
-            stopsContainer.innerHTML = route.stops.map((stop, index) => `
-                <div class="stop-item">
-                    <div class="stop-number">${index + 1}</div>
-                    <div class="stop-content">
-                        <h4>${stop.name}</h4>
-                        <p>${stop.description}</p>
-                    </div>
+            
+            // Render day tabs
+            const dayTabsContainer = document.getElementById('day-tabs');
+            dayTabsContainer.innerHTML = days.map((day, index) => `
+                <div class="day-tab ${index === 0 ? 'active' : ''}" onclick="switchDay(${index}, this)">
+                    <div class="day-number">Day ${day.day}</div>
+                    <div class="day-date">${day.date}</div>
                 </div>
             `).join('');
+            
+            // Render day content
+            renderDayContent(days, 0);
+            
+            navigate('route-days');
+        }
 
-            navigate('route-detail');
+        function renderDayContent(days, activeIndex) {
+            const container = document.getElementById('day-content');
+            const day = days[activeIndex];
+            
+            container.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size: 20px; font-weight: 700; color: #2D3436; margin-bottom: 16px;">
+                        Day ${day.day}: ${day.date}
+                    </h3>
+                    <div class="progress-bar" style="margin-bottom: 20px;">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                ${day.stops.map((stop, index) => `
+                    <div class="white-card" style="margin-bottom: 12px; cursor: pointer;" onclick="toggleStopComplete(this)">
+                        <div style="display: flex; align-items: flex-start; gap: 12px;">
+                            <div class="stop-number" style="width: 28px; height: 28px; border-radius: 14px; font-size: 12px;">${index + 1}</div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <h4 style="font-size: 16px; font-weight: 600; color: #2D3436;">${stop.name}</h4>
+                                    <div class="check-circle" style="width: 24px; height: 24px; border-radius: 12px; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display: none;"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </div>
+                                </div>
+                                <p style="color: #636E72; font-size: 13px; margin-top: 4px;">${stop.description}</p>
+                                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                    <span style="font-size: 11px; color: #ff6b6b; background: rgba(255,107,107,0.1); padding: 2px 8px; border-radius: 8px;">⏱ 2h</span>
+                                    <span style="font-size: 11px; color: #54a0ff; background: rgba(84,160,255,0.1); padding: 2px 8px; border-radius: 8px;">📍 1.2km</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function switchDay(index, tabElement) {
+            document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+            tabElement.classList.add('active');
+            // Re-render would need days data - for demo just show static
+        }
+
+        function toggleStopComplete(card) {
+            const checkCircle = card.querySelector('.check-circle');
+            const checkSvg = checkCircle.querySelector('svg');
+            const isComplete = checkCircle.style.background === 'linear-gradient(135deg, rgb(255, 107, 107), rgb(255, 159, 243))';
+            
+            if (!isComplete) {
+                checkCircle.style.background = 'linear-gradient(135deg, #ff6b6b, #ff9ff3)';
+                checkCircle.style.borderColor = 'transparent';
+                checkSvg.style.display = 'block';
+            } else {
+                checkCircle.style.background = 'transparent';
+                checkCircle.style.borderColor = '#ddd';
+                checkSvg.style.display = 'none';
+            }
+        }
+
+        function showAIGenerate() {
+            navigate('ai-generate');
+            simulateAIGeneration();
+        }
+
+        function simulateAIGeneration() {
+            const steps = [
+                { text: 'Analyzing destination...', delay: 800 },
+                { text: 'Finding top attractions...', delay: 1200 },
+                { text: 'Optimizing route...', delay: 1500 },
+                { text: 'Adding local secrets...', delay: 1000 },
+                { text: 'Finalizing itinerary...', delay: 800 }
+            ];
+            
+            const container = document.getElementById('ai-steps');
+            container.innerHTML = '';
+            
+            let totalDelay = 0;
+            steps.forEach((step, index) => {
+                totalDelay += step.delay;
+                setTimeout(() => {
+                    const div = document.createElement('div');
+                    div.style.cssText = 'display: flex; align-items: center; gap: 12px; margin-bottom: 16px; opacity: 0; transform: translateX(-20px); transition: all 0.4s ease;';
+                    div.innerHTML = `
+                        <div style="width: 32px; height: 32px; border-radius: 16px; background: linear-gradient(135deg, #ff6b6b, #ff9ff3); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px;">${index + 1}</div>
+                        <span style="color: white; font-size: 15px; font-weight: 500;">${step.text}</span>
+                    `;
+                    container.appendChild(div);
+                    setTimeout(() => {
+                        div.style.opacity = '1';
+                        div.style.transform = 'translateX(0)';
+                    }, 50);
+                }, totalDelay);
+            });
+            
+            setTimeout(() => {
+                document.getElementById('ai-complete').style.display = 'block';
+                document.getElementById('ai-complete').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('ai-complete').style.transition = 'opacity 0.5s';
+                    document.getElementById('ai-complete').style.opacity = '1';
+                }, 50);
+            }, totalDelay + 500);
         }
 
         // Initialize
         renderRoutes();
+        
+        // Handle screen from URL after DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initScreenFromURL);
+        } else {
+            initScreenFromURL();
+        }
     </script>
 </body>
 </html>
