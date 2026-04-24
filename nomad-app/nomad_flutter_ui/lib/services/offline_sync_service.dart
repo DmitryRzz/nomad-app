@@ -65,7 +65,7 @@ class OfflineSyncService {
             continue;
           }
 
-          ApiResponse response;
+          Map<String, dynamic> response;
           final method = item['method'] as String;
           final endpoint = item['endpoint'] as String;
           final body = item['body'] != null 
@@ -80,19 +80,19 @@ class OfflineSyncService {
               response = await api.patch(endpoint, body: body);
               break;
             case 'DELETE':
-              response = await api.delete(endpoint);
+              response = {'success': await api.delete(endpoint)};
               break;
             default:
               response = await api.get(endpoint);
           }
 
-          if (response.success) {
+          if (response['success'] == true) {
             await _storage.removeFromSyncQueue(item['id'] as int);
             synced++;
           } else {
             await _storage.incrementRetryCount(item['id'] as int);
             failed++;
-            errors.add(response.error ?? 'Unknown error');
+            errors.add(response['error'] ?? 'Unknown error');
           }
         } catch (e) {
           await _storage.incrementRetryCount(item['id'] as int);

@@ -1,9 +1,14 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
+
+// Conditional imports for platform-specific services
+import 'services/web_compat/all.dart' as web;
+
 import 'theme/sunset_theme.dart';
 import 'screens/welcome_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
 import 'screens/routes_list_screen.dart';
 import 'screens/smart_compass_screen.dart';
 import 'screens/language_shield_screen.dart';
@@ -12,24 +17,19 @@ import 'screens/profile_screen.dart';
 import 'screens/ai_trip_generation_screen.dart';
 import 'providers/auth_provider.dart';
 import 'services/local_storage_service.dart';
-import 'services/push_notification_service.dart';
-import 'services/offline_sync_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize local storage
+  // Initialize local storage (uses SharedPreferences on web)
   await LocalStorageService().init();
 
-  // Initialize Firebase
+  // Initialize Firebase (web stub)
   try {
-    await Firebase.initializeApp();
+    await web.FirebaseApp.initializeApp();
   } catch (e) {
-    debugPrint('Firebase init skipped: $e');
+    debugPrint('Firebase init: $e');
   }
-
-  // Initialize push notifications
-  await PushNotificationService().initialize();
 
   runApp(
     const ProviderScope(
@@ -44,7 +44,7 @@ class NomadApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'NOMAD',
+      title: 'NOMAD AI Travel',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.light,
@@ -103,6 +103,12 @@ class NomadApp extends ConsumerWidget {
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
       ),
+      routes: {
+        '/': (context) => const AuthGate(),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/routes': (context) => const MainNavigationScreen(),
+      },
       home: const AuthGate(),
     );
   }
@@ -116,15 +122,19 @@ class AuthGate extends ConsumerWidget {
     final authState = ref.watch(authProvider);
 
     if (authState.isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Loading...'),
-            ],
+      return Container(
+        decoration: const BoxDecoration(gradient: SunsetGradients.background),
+        child: const Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(color: Colors.white),
+                SizedBox(height: 16),
+                Text('Loading...', style: TextStyle(color: Colors.white)),
+              ],
+            ),
           ),
         ),
       );
@@ -154,17 +164,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   ];
 
   @override
-  void initState() {
-    super.initState();
-    _initServices();
-  }
-
-  Future<void> _initServices() async {
-    final syncService = OfflineSyncService();
-    await syncService.syncPendingActions();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(gradient: SunsetGradients.background),
@@ -177,7 +176,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             topRight: Radius.circular(24),
           ),
           child: BackdropFilter(
-            filter: const ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
             child: Container(
               decoration: SunsetStyles.glassNav,
               child: SafeArea(

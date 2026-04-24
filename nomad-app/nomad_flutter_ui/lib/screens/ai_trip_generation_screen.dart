@@ -91,7 +91,7 @@ class _AITripGenerationScreenState extends ConsumerState<AITripGenerationScreen>
             style: const TextStyle(color: Colors.white),
             decoration: SunsetStyles.glassInput(
               hint: 'Enter destination (city or country)',
-              prefixIcon: Icons.location_on,
+              icon: Icons.location_on,
             ),
           ),
           const SizedBox(height: 24),
@@ -370,7 +370,7 @@ class _AITripGenerationScreenState extends ConsumerState<AITripGenerationScreen>
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: BackdropFilter(
-          filter: const ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -415,7 +415,7 @@ class _AITripGenerationScreenState extends ConsumerState<AITripGenerationScreen>
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: BackdropFilter(
-          filter: const ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -689,7 +689,7 @@ class _AITripGenerationScreenState extends ConsumerState<AITripGenerationScreen>
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
-        filter: const ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(

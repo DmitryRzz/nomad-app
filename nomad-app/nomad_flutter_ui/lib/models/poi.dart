@@ -1,7 +1,7 @@
 class POI {
   final String id;
   final String name;
-  final String description;
+  final String? description;
   final String category;
   final double latitude;
   final double longitude;

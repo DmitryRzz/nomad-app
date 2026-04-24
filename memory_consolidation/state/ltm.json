@@ -1,0 +1,12 @@
+{
+  "invoke_time": 2,
+  "ltm": {
+    "identity": null,
+    "work_method": "User orchestrates complex multi-phase software builds through a Telegram bot interface (RDSkimibot2_bot), preferring mobile-accessible, asynchronous collaboration. They drive work through direct stage commands («Приступай к 7 этапу») and expect concrete, testable deliverables after each block — specifically updated UI with full manual testing capability. They explicitly requested task breakdowns sized to fit within context limits, showing awareness of LLM constraints and desire for sustainable throughput. Approval is contingent on demonstrated progress («Молодец. Продолжай»); they probe actively when visibility drops («Че делаешь?», «Ты тут?»), indicating low tolerance for opaque or stalled execution.",
+    "communication": "Russian-speaking, bluntly transactional with minimal ceremony. Uses terse imperatives and slangy reductions («Че делаешь?» rather than formal phrasing). Frustration manifests as repetitive status checks rather than explicit complaint; praise is sparse and earned («Молодец»). Notably persistent — will escalate probing rather than abandon unresponsive threads. Expects binary confirmation («Да», «Всё») and dislikes unnecessary elaboration. Pattern of demanding structured plans upfront before committing to execution.",
+    "temporal": "Building a travel/experience booking platform — completed Phase 7 (Integrations & Monetization: booking service, Stripe/GetYourGuide APIs, guide profiles, admin dashboard) and advancing toward Phase 8 (Polish & Launch). User requested comprehensive task roadmap from current state to app store listing and productive launch, broken into context-sized chunks with testable UI milestones. Project has accumulated significant technical debt noted explicitly (mock GetYourGuide data, missing flutter_stripe integration, placeholder Stripe keys).",
+    "taste": null
+  },
+  "generated_at": "2026-04-24T03:57:06.101429",
+  "stm_hash": "53843983888e73c8a2629c4477f83585"
+}

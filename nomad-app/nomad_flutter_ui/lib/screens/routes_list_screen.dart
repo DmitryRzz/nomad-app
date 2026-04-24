@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/sunset_theme.dart';
-import '../models/route.dart';
+import '../models/route.dart' as route_model;
 import '../providers/route_provider.dart';
 import 'route_detail_screen.dart';
 import 'create_route_screen.dart';
@@ -116,7 +116,7 @@ class RoutesListScreen extends ConsumerWidget {
 }
 
 class RouteCard extends ConsumerWidget {
-  final Route route;
+  final route_model.Route route;
 
   const RouteCard({super.key, required this.route});
 
@@ -127,7 +127,7 @@ class RouteCard extends ConsumerWidget {
       decoration: SunsetStyles.whiteCard,
       child: InkWell(
         onTap: () {
-          ref.read(selectedRouteProvider.notifier).state = route;
+          ref.read(selectedRouteProvider.notifier).state = route as route_model.Route?;
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const RouteDetailScreen()),

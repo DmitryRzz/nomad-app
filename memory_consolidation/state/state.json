@@ -1,0 +1,28 @@
+{
+  "stm": {
+    "count": 1,
+    "last_ts": "2026-04-22T23:34:48.673372",
+    "last_sessions": 1,
+    "last_messages": 23,
+    "last_chars": 4134
+  },
+  "diary": {
+    "count": 2,
+    "last_ts": "2026-04-24T03:56:56.843628",
+    "last_day": 2,
+    "last_sessions": 1,
+    "last_messages": 68,
+    "last_filename": "day2-2026-04-23-pdf_with_hieroglyphs_inside.md",
+    "last_latency_s": 54.3,
+    "last_skip": "no_sessions_today"
+  },
+  "compact": {
+    "count": 2,
+    "last_ts": "2026-04-24T03:57:06.100946",
+    "last_invoke": 2,
+    "last_sessions": 2,
+    "last_messages": 74,
+    "last_latency_s": 9.0,
+    "last_model": "k2p5"
+  }
+}

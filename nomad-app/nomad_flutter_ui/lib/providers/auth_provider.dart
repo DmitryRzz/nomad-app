@@ -4,18 +4,19 @@ import '../models/user.dart';
 import '../services/api_service.dart';
 import '../services/local_storage_service.dart';
 
-// Auth state
 class AuthState {
   final User? user;
   final bool isLoading;
   final String? error;
   final bool isAuthenticated;
+  final bool isDemoMode;
 
   AuthState({
     this.user,
     this.isLoading = false,
     this.error,
     this.isAuthenticated = false,
+    this.isDemoMode = false,
   });
 
   AuthState copyWith({
@@ -23,17 +24,18 @@ class AuthState {
     bool? isLoading,
     String? error,
     bool? isAuthenticated,
+    bool? isDemoMode,
   }) {
     return AuthState(
       user: user ?? this.user,
       isLoading: isLoading ?? this.isLoading,
       error: error,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+      isDemoMode: isDemoMode ?? this.isDemoMode,
     );
   }
 }
 
-// Auth notifier
 class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier() : super(AuthState()) {
     _checkAuthStatus();
@@ -50,31 +52,37 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final user = await _storage.getUser();
 
       if (tokens != null && user != null) {
-        // Validate token by fetching current user
-        final response = await _api.get('/auth/me');
-        if (response.success) {
-          final freshUser = User.fromJson(response.data['user']);
-          await _storage.saveUser(freshUser);
-          state = state.copyWith(
-            user: freshUser,
-            isAuthenticated: true,
-            isLoading: false,
-          );
-        } else {
+        _api.setTokens(tokens.accessToken, tokens.refreshToken);
+        try {
+          final response = await _api.getMe();
+          if (response['user'] != null) {
+            final freshUser = User.fromJson(response['user']);
+            await _storage.saveUser(freshUser);
+            state = state.copyWith(
+              user: freshUser,
+              isAuthenticated: true,
+              isLoading: false,
+            );
+          } else {
+            await logout();
+          }
+        } catch (e) {
           // Token invalid, try refresh
-          final refreshed = await _api._refreshToken();
+          final refreshed = await _api.refreshToken();
           if (refreshed) {
-            final retry = await _api.get('/auth/me');
-            if (retry.success) {
-              final freshUser = User.fromJson(retry.data['user']);
-              await _storage.saveUser(freshUser);
-              state = state.copyWith(
-                user: freshUser,
-                isAuthenticated: true,
-                isLoading: false,
-              );
-              return;
-            }
+            try {
+              final retry = await _api.getMe();
+              if (retry['user'] != null) {
+                final freshUser = User.fromJson(retry['user']);
+                await _storage.saveUser(freshUser);
+                state = state.copyWith(
+                  user: freshUser,
+                  isAuthenticated: true,
+                  isLoading: false,
+                );
+                return;
+              }
+            } catch (_) {}
           }
           await logout();
         }
@@ -90,15 +98,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final response = await _api.post('/auth/login', body: {
-        'email': email,
-        'password': password,
-      });
+      final response = await _api.login(email, password);
 
-      if (response.success) {
-        final tokens = AuthTokens.fromJson(response.data['tokens']);
-        final user = User.fromJson(response.data['user']);
+      if (response['accessToken'] != null) {
+        final tokens = AuthTokens(
+          accessToken: response['accessToken'],
+          refreshToken: response['refreshToken'],
+        );
+        final user = User.fromJson(response['user']);
 
+        _api.setTokens(tokens.accessToken, tokens.refreshToken);
         await _storage.saveTokens(tokens);
         await _storage.saveUser(user);
 
@@ -111,7 +120,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       } else {
         state = state.copyWith(
           isLoading: false,
-          error: response.error ?? 'Login failed',
+          error: response['error'] ?? 'Login failed',
         );
         return false;
       }
@@ -125,16 +134,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final response = await _api.post('/auth/register', body: {
-        'email': email,
-        'password': password,
-        'name': name,
-      });
+      final response = await _api.register(email, password, name: name);
 
-      if (response.success) {
-        final tokens = AuthTokens.fromJson(response.data['tokens']);
-        final user = User.fromJson(response.data['user']);
+      if (response['accessToken'] != null) {
+        final tokens = AuthTokens(
+          accessToken: response['accessToken'],
+          refreshToken: response['refreshToken'],
+        );
+        final user = User.fromJson(response['user']);
 
+        _api.setTokens(tokens.accessToken, tokens.refreshToken);
         await _storage.saveTokens(tokens);
         await _storage.saveUser(user);
 
@@ -147,7 +156,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       } else {
         state = state.copyWith(
           isLoading: false,
-          error: response.error ?? 'Registration failed',
+          error: response['error'] ?? 'Registration failed',
         );
         return false;
       }
@@ -157,26 +166,32 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> logout() async {
-    try {
-      await _api.post('/auth/logout');
-    } catch (e) {
-      // Ignore logout API errors
-    }
+  void enableDemoMode() {
+    state = state.copyWith(
+      isDemoMode: true,
+      isAuthenticated: false,
+      isLoading: false,
+    );
+  }
 
+  Future<void> logout() async {
+    _api.clearTokens();
     await _storage.clearAll();
     state = AuthState();
   }
 
+  void clearError() {
+    state = state.copyWith(error: null);
+  }
+
   Future<bool> updateProfile({String? name, String? nativeLanguage}) async {
     try {
-      final response = await _api.patch('/auth/me', body: {
-        if (name != null) 'name': name,
-        if (nativeLanguage != null) 'native_language': nativeLanguage,
-      });
-
-      if (response.success) {
-        final updatedUser = User.fromJson(response.data['user']);
+      // For demo, just update local state
+      if (state.user != null) {
+        final updatedUser = state.user!.copyWith(
+          name: name,
+          nativeLanguage: nativeLanguage,
+        );
         await _storage.saveUser(updatedUser);
         state = state.copyWith(user: updatedUser);
         return true;
@@ -186,13 +201,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return false;
     }
   }
-
-  void clearError() {
-    state = state.copyWith(error: null);
-  }
 }
 
-// Provider
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier();
 });

@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:convert' as convert;
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -93,19 +93,19 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
     try {
       final file = File(path);
       final bytes = await file.readAsBytes();
-      final base64Audio = base64Encode(bytes);
+      final base64Audio = convert.base64Encode(bytes);
 
       final response = await http.post(
         Uri.parse('http://localhost:3000/ai/transcribe'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
+        body: convert.jsonEncode({
           'audio': base64Audio,
           'language': _selectedSourceLang == 'auto' ? null : _selectedSourceLang,
         }),
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final data = convert.jsonDecode(response.body);
         if (data['success'] == true) {
           setState(() {
             _recognizedText = data['data']['text'];
@@ -127,7 +127,7 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
       final response = await http.post(
         Uri.parse('http://localhost:3000/ai/translate'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
+        body: convert.jsonEncode({
           'text': text,
           'targetLang': _selectedTargetLang,
           'context': _selectedContext,
@@ -135,7 +135,7 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final data = convert.jsonDecode(response.body);
         if (data['success'] == true) {
           setState(() {
             _translatedText = data['data']['translation'];
@@ -247,7 +247,7 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
-        filter: const ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
@@ -378,7 +378,7 @@ class _LanguageShieldScreenState extends State<LanguageShieldScreen> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
-        filter: const ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(

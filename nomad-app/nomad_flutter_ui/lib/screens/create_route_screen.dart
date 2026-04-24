@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/sunset_theme.dart';
-import '../models/route.dart';
+import '../models/route.dart' as route_model;
 import '../providers/route_provider.dart';
 
 class CreateRouteScreen extends ConsumerStatefulWidget {
@@ -71,7 +71,7 @@ class _CreateRouteScreenState extends ConsumerState<CreateRouteScreen> {
                 style: const TextStyle(color: Colors.white),
                 decoration: SunsetStyles.glassInput(
                   hint: 'City (e.g., Paris, Tokyo)',
-                  prefixIcon: Icons.location_city,
+                  icon: Icons.location_city,
                 ),
               ),
               const SizedBox(height: 16),
@@ -80,7 +80,7 @@ class _CreateRouteScreenState extends ConsumerState<CreateRouteScreen> {
                 style: const TextStyle(color: Colors.white),
                 decoration: SunsetStyles.glassInput(
                   hint: 'Country (optional)',
-                  prefixIcon: Icons.public,
+                  icon: Icons.public,
                 ),
               ),
               const SizedBox(height: 24),
@@ -208,7 +208,7 @@ class _CreateRouteScreenState extends ConsumerState<CreateRouteScreen> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
-        filter: const ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
@@ -260,7 +260,7 @@ class _CreateRouteScreenState extends ConsumerState<CreateRouteScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final request = RouteGenerationRequest(
+      final request = route_model.RouteGenerationRequest(
         city: _cityController.text.trim(),
         country: _countryController.text.trim().isNotEmpty
             ? _countryController.text.trim()
@@ -270,7 +270,7 @@ class _CreateRouteScreenState extends ConsumerState<CreateRouteScreen> {
         pace: _intensity,
       );
 
-      await ref.read(routeProvider.notifier).generateRoute(request);
+      await ref.read(routesProvider.notifier).createRoute(request);
 
       if (mounted) {
         Navigator.pop(context);

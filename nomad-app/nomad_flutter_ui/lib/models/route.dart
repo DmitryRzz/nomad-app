@@ -6,6 +6,7 @@ class Route {
   final String status;
   final double? estimatedDurationHours;
   final List<RouteStop> stops;
+  final List<String>? tags;
   final DateTime? createdAt;
 
   Route({
@@ -16,6 +17,7 @@ class Route {
     required this.status,
     this.estimatedDurationHours,
     required this.stops,
+    this.tags,
     this.createdAt,
   });
 
@@ -31,8 +33,11 @@ class Route {
               ?.map((s) => RouteStop.fromJson(s))
               .toList() ??
           [],
+      tags: (json['tags'] as List<dynamic>?)?.cast<String>(),
       createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
+          ? (json['created_at'] is int
+              ? DateTime.fromMillisecondsSinceEpoch(json['created_at'] * 1000)
+              : DateTime.parse(json['created_at']))
           : null,
     );
   }

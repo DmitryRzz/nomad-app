@@ -18,6 +18,15 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    DateTime createdAt;
+    if (json['created_at'] is int) {
+      createdAt = DateTime.fromMillisecondsSinceEpoch(json['created_at'] * 1000);
+    } else if (json['created_at'] is String) {
+      createdAt = DateTime.parse(json['created_at']);
+    } else {
+      createdAt = DateTime.now();
+    }
+    
     return User(
       id: json['id'],
       email: json['email'],
@@ -25,7 +34,7 @@ class User {
       avatarUrl: json['avatar_url'],
       nativeLanguage: json['native_language'] ?? 'ru',
       emailVerified: json['email_verified'] ?? false,
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: createdAt,
     );
   }
 

@@ -152,7 +152,7 @@ class LocalStorageService {
     final results = await _db?.query('offline_routes');
     return results?.map((r) {
       final data = jsonDecode(r['data'] as String);
-      return {...data, 'sync_status': r['sync_status']};
+      return {...data, 'sync_status': r['sync_status']} as Map<String, dynamic>;
     }).toList() ?? [];
   }
 
