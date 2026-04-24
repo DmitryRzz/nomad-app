@@ -7,6 +7,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1A1A2E">
     <title>NOMAD AI Travel Planner</title>
+    <script>
+        // Register Service Worker for offline support
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(console.error);
+        }
+    </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
@@ -263,7 +269,7 @@
                 <div class="glass-card" style="width: 100%; margin-bottom: 24px;">
                     <p style="color: white; font-size: 15px; line-height: 1.6;">Discover personalized routes, local secrets, and smart navigation — all powered by AI.</p>
                 </div>
-                <button class="btn-primary" onclick="navigate('routes')" style="margin-bottom: 16px;">Explore Demo</button>
+                <button class="btn-primary" onclick="requestNotificationPermission(); navigate('routes')" style="margin-bottom: 16px;">Explore Demo</button>
                 <button onclick="navigate('register')" style="background: transparent; color: white; border: 2px solid rgba(255,255,255,0.5); padding: 16px 32px; border-radius: 16px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%;">Create Account</button>
             </div>
         </div>
@@ -545,6 +551,43 @@
     </div>
 
     <script>
+        // Offline Storage Functions
+        function saveRoutes() {
+            localStorage.setItem('nomad_routes', JSON.stringify(routes));
+        }
+        
+        function loadRoutes() {
+            const saved = localStorage.getItem('nomad_routes');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (e) {
+                    return null;
+                }
+            }
+            return null;
+        }
+        
+        // Push Notification Mock
+        function showPushNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, { body, icon: '🌍' });
+            } else {
+                const toast = document.createElement('div');
+                toast.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ff6b6b, #ff9ff3); color: white; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; z-index: 9999; animation: slideDown 0.3s ease;';
+                toast.textContent = title + ': ' + body;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 4000);
+            }
+        }
+        
+        // Request notification permission
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
         // Demo Data
         const routes = [
             {
@@ -854,11 +897,16 @@
                 stops: mockStops
             };
             
+            // Mark as saved offline
+            newRoute.offline = true;
+            
             // Add to routes list
             routes.unshift(newRoute);
             renderRoutes();
+            saveRoutes();
             
-            // Show detail with day-by-day
+            // Show push notification
+            showPushNotification('Route Ready', `${newRoute.title} is now available offline`);
             showRouteDetail(newRoute.id);
         }
 
