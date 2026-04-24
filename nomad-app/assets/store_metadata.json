@@ -1,0 +1,82 @@
+{
+  "app_store": {
+    "name": "NOMAD - AI Travel Planner",
+    "subtitle": "AI-Powered Trip Itineraries",
+    "category": "Travel",
+    "secondary_category": "Lifestyle",
+    "keywords": [
+      "travel planner",
+      "trip itinerary",
+      "AI travel",
+      "route planner",
+      "vacation planner",
+      "travel guide",
+      "offline maps",
+      "trip organizer",
+      "travel assistant",
+      "AI trip generator"
+    ],
+    "description_short": "Generate AI-powered travel itineraries in seconds. Plan trips, discover local secrets, and navigate offline.",
+    "description_full": "NOMAD is your AI travel companion. Tell us where you're going, your budget, and travel style — we'll create the perfect itinerary in seconds.\n\nFEATURES:\n✨ AI Route Generation — Custom itineraries based on your preferences\n📍 Smart Compass — Find nearby attractions and navigate with ease\n📅 Day-by-Day View — Beautiful timeline with activity tracking\n💾 Offline Access — Save routes locally, no internet needed\n🛡️ Language Shield — Offline phrasebook for 50+ languages\n💰 Budget Tracking — Budget, Moderate, or Luxury modes\n\nPERFECT FOR:\n• Solo travelers\n• Couples planning romantic getaways\n• Food explorers and foodies\n• Adventure seekers\n• Digital nomads\n\nSUBSCRIPTION:\nNOMAD Pro ($9.99/month) unlocks unlimited AI generations, offline maps, and priority support. Free tier includes 3 AI trips per month.\n\nDownload NOMAD and let AI plan your next adventure.",
+    "support_url": "https://nomad.app/support",
+    "marketing_url": "https://nomad.app",
+    "privacy_policy_url": "https://nomad.app/privacy",
+    "screenshots": {
+      "iphone_6.7": [
+        "assets/store-screenshots/01-welcome.png",
+        "assets/store-screenshots/02-routes.png",
+        "assets/store-screenshots/03-day-by-day.png",
+        "assets/store-screenshots/04-ai-generation.png",
+        "assets/store-screenshots/05-compass.png"
+      ],
+      "iphone_6.5": [
+        "assets/store-screenshots/01-welcome.png",
+        "assets/store-screenshots/02-routes.png",
+        "assets/store-screenshots/03-day-by-day.png",
+        "assets/store-screenshots/04-ai-generation.png",
+        "assets/store-screenshots/05-compass.png"
+      ]
+    },
+    "rating": "4+",
+    "copyright": "© 2026 NOMAD Inc.",
+    "price_tier": "0",
+    "availability": "all_countries",
+    "devices": [
+      "iPhone",
+      "iPad"
+    ]
+  },
+  "google_play": {
+    "title": "NOMAD - AI Travel Planner",
+    "short_description": "AI-powered travel itineraries with offline support",
+    "full_description": "NOMAD is your AI travel companion. Generate personalized trip itineraries in seconds based on your destination, budget, and travel style.\n\n✨ AI Route Generation\n📍 Smart Compass Navigation\n📅 Day-by-Day Itinerary View\n💾 Offline Route Access\n🛡️ Language Shield (50+ languages)\n💰 Budget, Moderate & Luxury Modes\n\nFree: 3 AI trips/month\nPro ($9.99/month): Unlimited AI, offline maps, priority support",
+    "category": "Travel & Local",
+    "tags": [
+      "travel planner",
+      "trip itinerary",
+      "AI travel",
+      "route planner",
+      "offline maps",
+      "vacation planner"
+    ],
+    "content_rating": "Everyone",
+    "contact_email": "support@nomad.app",
+    "contact_website": "https://nomad.app",
+    "privacy_policy": "https://nomad.app/privacy",
+    "screenshots": {
+      "phone": [
+        "assets/store-screenshots/01-welcome.png",
+        "assets/store-screenshots/02-routes.png",
+        "assets/store-screenshots/03-day-by-day.png",
+        "assets/store-screenshots/04-ai-generation.png",
+        "assets/store-screenshots/05-compass.png"
+      ],
+      "tablet": [
+        "assets/store-screenshots/02-routes.png",
+        "assets/store-screenshots/03-day-by-day.png"
+      ]
+    },
+    "feature_graphic": "assets/icon.svg",
+    "promo_video": ""
+  }
+}
