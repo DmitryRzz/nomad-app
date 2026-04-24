@@ -1,0 +1,40 @@
+# NOMAD - AI Travel Planner
+
+Discover personalized routes, local secrets, and smart navigation powered by AI.
+
+## What makes NOMAD special:
+
+🗺️ **AI Route Generation** — Tell us your destination, budget, and style. We create the perfect itinerary in seconds.
+
+📍 **Smart Compass** — Real-time navigation to nearby POIs with offline support.
+
+🛡️ **Language Shield** — Offline phrasebook with pronunciation for 50+ languages.
+
+📅 **Day-by-Day View** — Beautiful timeline with activity tracking and progress.
+
+💾 **Works Offline** — Save routes locally. No internet? No problem.
+
+✨ **Sunset Design** — Unique glassmorphism UI with warm gradient aesthetics.
+
+## Perfect for:
+- Solo travelers
+- Couples planning romantic getaways
+- Food explorers
+- Adventure seekers
+- Digital nomads
+
+## Supported Features:
+- Multi-day trip planning
+- Budget tracking (Budget / Moderate / Luxury)
+- Activity completion tracking
+- Transport mode selection
+- Real-time weather integration
+- Push notifications for trip reminders
+
+Download NOMAD and let AI plan your next adventure.
+
+---
+
+**Privacy:** We respect your data. No tracking, no ads. Your trips are yours alone.
+
+**Subscription:** NOMAD Pro ($9.99/mo) unlocks unlimited AI generations, offline maps, and priority support. Free tier includes 3 AI trips per month.

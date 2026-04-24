@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="sunset" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b6b"/>
+      <stop offset="33%" style="stop-color:#feca57"/>
+      <stop offset="66%" style="stop-color:#ff9ff3"/>
+      <stop offset="100%" style="stop-color:#54a0ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="230" fill="url(#sunset)"/>
+  <text x="512" y="580" text-anchor="middle" font-size="420" font-family="-apple-system, sans-serif">🌍</text>
+  <circle cx="800" cy="200" r="60" fill="white" opacity="0.3"/>
+  <circle cx="200" cy="800" r="80" fill="white" opacity="0.2"/>
+</svg>
