@@ -832,23 +832,33 @@
             if (summary) {
                 summary.textContent = `Your ${duration}-day ${destination} adventure (${budget} budget) is ready`;
             }
+            
+            // Generate mock stops for the AI route
+            const mockStops = [
+                { name: `Explore ${destination} Old Town`, description: 'Historic center with cobblestone streets and local architecture', order: 1 },
+                { name: 'Local Market Visit', description: 'Authentic food and crafts from local vendors', order: 2 },
+                { name: 'Famous Landmark Tour', description: 'Iconic sight every visitor must see', order: 3 },
+                { name: 'Sunset Viewpoint', description: 'Best panoramic views of the city', order: 4 },
+                { name: 'Local Cuisine Dinner', description: 'Traditional dishes at a recommended restaurant', order: 5 }
+            ].slice(0, Math.max(2, Math.min(duration * 2, 5)));
+            
             const newRoute = {
                 id: 'ai-' + Date.now(),
                 title: `${duration}-Day ${destination} Adventure`,
                 city: destination,
-                country: 'Unknown',
+                country: 'AI Generated',
                 status: 'active',
-                duration: duration * 24 + 'h',
+                duration: duration * 24,
                 tags: ['ai-generated', budget],
                 image: '🌍',
-                stops: duration
+                stops: mockStops
             };
             
             // Add to routes list
             routes.unshift(newRoute);
             renderRoutes();
             
-            // Show detail
+            // Show detail with day-by-day
             showRouteDetail(newRoute.id);
         }
 
